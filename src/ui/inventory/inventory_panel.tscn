@@ -28,7 +28,6 @@ text = "กระเป๋า"
 
 [node name="Grid" type="GridContainer" parent="Panel/VBox"]
 unique_name_in_owner = true
-columns = 10
 theme_override_constants/h_separation = 2
 theme_override_constants/v_separation = 2
 

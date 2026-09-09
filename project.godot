@@ -61,6 +61,10 @@ anti_aliasing/quality/msaa_2d=0
 
 buses/default_bus_layout="res://resources/themes/default_bus_layout.tres"
 
+[gui]
+
+theme/custom="res://resources/themes/main_theme.tres"
+
 [input]
 
 move_up={

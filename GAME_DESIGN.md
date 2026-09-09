@@ -48,7 +48,7 @@ screen_y = y * 16 * depth_ratio  -  z * 16
 เรียงหน้า-หลังด้วย world y (ค่ามาก = อยู่หน้า)
 ```
 
-❓ **โปรเจกชัน** — ผมเสนอ **oblique 3/4 view** (แบบ Stardew Valley: เห็นด้านหน้าอาคาร พื้นเอียงเล็กน้อย) เพราะต่อยอดจาก top-down เดิมได้ตรงที่สุด ทางเลือกอื่นคือ **isometric แท้** ซึ่งสวยกว่าแต่ tileset และ art ทำยากกว่ามาก
+✅ **โปรเจกชัน: oblique 3/4 view** — ตัดสินใจแล้ว (แบบ Stardew Valley: เห็นด้านหน้าอาคาร พื้นเอียงเล็กน้อย) ไม่ใช่ isometric แท้
 
 ### ขนาดของทุกอย่างในเกม
 
@@ -116,8 +116,8 @@ screen_y = y * 16 * depth_ratio  -  z * 16
 
 | # | คำถาม | กระทบอะไร |
 |---|---|---|
-| 1 | โปรเจกชัน: oblique 3/4 view หรือ isometric แท้? | ทุกอย่างเรื่องภาพ + world-object model |
-| 2 | ตาราง canonical scale ข้างบนโอเคไหม? | collision/interaction ของทุก entity |
+| ~~1~~ | ~~โปรเจกชัน~~ → **ตัดสินใจแล้ว: oblique 3/4** | — |
+| 2 | **ตาราง canonical scale ข้างบนโอเคไหม?** ← เหลือข้อนี้บล็อก Phase W | collision/interaction ของทุก entity |
 | 3 | มีระบบต่อสู้/ถ้ำ/ตกปลาไหม? | `ToolType` มี `AXE` `PICKAXE` `FISHING_ROD` รออยู่แล้ว |
 | 4 | ระบบความสัมพันธ์ลึกแค่ไหน — แค่เป็นเพื่อน หรือมีแต่งงาน? | `max_hearts` มีแล้วแต่ยังไม่มีกลไก |
 | 5 | เป้าหมายของเกมคืออะไร มีตอนจบไหม? | quest system, progression |
@@ -128,5 +128,8 @@ screen_y = y * 16 * depth_ratio  -  z * 16
 ## 7. สิ่งที่ตัดสินใจแล้ว ไม่ต้องถามซ้ำ
 
 - ทิศทางภาพ **2.5D** (ตัวละคร 2D, สิ่งแวดล้อม 3D-looking)
+- โปรเจกชัน **oblique 3/4 view** ไม่ใช่ isometric
+- ฟอนต์: default ของ Godot 4.7 ใช้ได้ รองรับไทยถูกต้อง ไม่ต้องหาฟอนต์ใหม่
+- UI: base viewport 640×360 + `resources/themes/main_theme.tres` font size 10
 - Engine **Godot 4.7.2**, GDScript
 - ขนาดใน gameplay มาจาก **Resource** ไม่ใช่ sprite และไม่ใช่ตัวเลขใน `.tscn`

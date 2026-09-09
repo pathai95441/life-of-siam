@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var prompt_label: Label = %PromptLabel
 @onready var toast_label: Label = %ToastLabel
 @onready var hotbar: HBoxContainer = %Hotbar
+@onready var selected_label: Label = %SelectedItemLabel
 
 var _toast_timer: float = 0.0
 
@@ -50,43 +51,54 @@ func _refresh_all() -> void:
 
 # --- Hotbar ------------------------------------------------------------------
 
+## Cells show the hotkey digit and the stack count -- never an abbreviated
+## item name. Truncating a Thai name splits grapheme clusters and orphans its
+## vowel and tone marks, so the full name goes to [member selected_label] and
+## the tooltip instead. When item icons exist, the icon replaces the digit.
 func _build_hotbar() -> void:
 	for child in hotbar.get_children():
 		child.queue_free()
+	var edge := float(GameConstants.HOTBAR_CELL_SIZE)
 	for i in GameConstants.HOTBAR_SLOTS:
 		var cell := Panel.new()
-		cell.custom_minimum_size = Vector2(28, 28)
 		cell.name = "Slot%d" % i
-
-		var count := Label.new()
-		count.name = "Count"
-		count.set_anchors_preset(Control.PRESET_FULL_RECT)
-		count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		count.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		cell.add_child(count)
-
+		cell.custom_minimum_size = Vector2(edge, edge)
+		cell.clip_contents = true
+		cell.add_child(_make_cell_label("Key", str(i + 1),
+			HORIZONTAL_ALIGNMENT_LEFT, VERTICAL_ALIGNMENT_TOP))
+		cell.add_child(_make_cell_label("Count", "",
+			HORIZONTAL_ALIGNMENT_RIGHT, VERTICAL_ALIGNMENT_BOTTOM))
 		hotbar.add_child(cell)
+
+
+func _make_cell_label(node_name: String, text: String,
+		h_align: HorizontalAlignment, v_align: VerticalAlignment) -> Label:
+	var label := Label.new()
+	label.name = node_name
+	label.text = text
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = h_align
+	label.vertical_alignment = v_align
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return label
 
 
 func _refresh_hotbar() -> void:
 	for i in hotbar.get_child_count():
 		var cell := hotbar.get_child(i) as Panel
 		var count := cell.get_node("Count") as Label
-		if i >= Inventory.slots.size():
-			count.text = ""
-			continue
-		var slot := Inventory.slots[i]
-		if slot.is_empty():
-			count.text = ""
-			cell.tooltip_text = ""
-		else:
-			var item := slot.data()
-			# No icons during blockout: show a short name and the stack count.
-			var short_name := item.label().left(4) if item != null else "?"
-			count.text = "%s\n%d" % [short_name, slot.count] if slot.count > 1 else short_name
-			cell.tooltip_text = item.label() if item != null else ""
-		cell.modulate = Color.WHITE if i != Inventory.selected_index else Color(1.4, 1.4, 0.8)
+		var slot := Inventory.slots[i] if i < Inventory.slots.size() else InventorySlot.new()
+		var item := slot.data()
+		count.text = str(slot.count) if slot.count > 1 else ""
+		cell.tooltip_text = item.label() if item != null else ""
+		cell.modulate = Color(1.4, 1.4, 0.8) if i == Inventory.selected_index else Color.WHITE
+	_refresh_selected_label()
+
+
+func _refresh_selected_label() -> void:
+	var item := Inventory.selected_item()
+	selected_label.text = item.label() if item != null else ""
+	selected_label.visible = item != null
 
 
 func _on_hotbar_selection_changed(_index: int, _item_id: StringName) -> void:

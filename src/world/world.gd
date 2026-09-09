@@ -17,6 +17,14 @@ extends Node2D
 @export var world_music: AudioStream
 ## Fallback spawn used when the requested spawn point does not exist.
 @export var default_spawn: NodePath
+## Playable extent of this map in world pixels. The follow camera is clamped to
+## it, so the view never shows past the map edge. Per-map level data, which is
+## why it lives on the scene rather than in GameConstants.
+##
+## Must exceed the base viewport in both axes or the clamp cannot help: a map
+## narrower than the screen leaves bare ground visible at the sides no matter
+## where the camera sits.
+@export var bounds := Rect2(-480, -360, 960, 720)
 
 @onready var spawn_points: Node = $SpawnPoints
 @onready var entities: Node2D = $Entities
@@ -44,6 +52,8 @@ func _place_player() -> void:
 	var target := _find_spawn(GameState.spawn_point)
 	if target != null:
 		player.global_position = target.global_position
+	if player.has_method("set_camera_limits"):
+		player.set_camera_limits(bounds)
 
 
 func _find_spawn(id: StringName) -> Node2D:

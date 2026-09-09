@@ -1,0 +1,20 @@
+[gd_resource type="Theme" format=3]
+
+; Project-wide UI theme. Applied through ProjectSettings gui/theme/custom, so
+; every Control inherits it without per-scene overrides.
+;
+; Font sizes are tuned to the 640x360 base viewport declared in project.godot.
+; At the default 1280x720 window that is a 2x scale, so 10 here reads as 20px
+; on screen. If the base viewport changes, these numbers must be revisited --
+; that coupling is the whole reason they live in one file.
+;
+; Godot's default font covers Thai correctly, including vowel and tone-mark
+; placement, so no font file is bundled. Only sizes are set here.
+
+[resource]
+default_font_size = 10
+Label/font_sizes/font_size = 10
+Button/font_sizes/font_size = 10
+CheckButton/font_sizes/font_size = 10
+RichTextLabel/font_sizes/normal_font_size = 10
+RichTextLabel/font_sizes/bold_font_size = 10

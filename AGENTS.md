@@ -51,6 +51,13 @@ Godot 4.7.2 อยู่ใน PATH เป็น `godot`
 13. ห้าม god class / giant manager
 14. `@export` ชื่อสั้นต้องเช็คก่อนว่าชนกับ property ของคลาส engine ไหม — **มันเป็น parse error ไม่ใช่ warning** (เคยเสียเวลาไปกับ `priority` บน `Area2D` ที่ลาม 8 สคริปต์) ชื่อเสี่ยง: `position` `scale` `visible` `mode` `offset` `size` `speed` `disabled` `monitoring` `priority`
 
+### ข้อความไทย
+14b. **ห้ามตัด string ไทยด้วย `.left(n)` / `.substr()` ตามจำนวนตัวอักษร** — ภาษาไทยมี
+    grapheme cluster (พยัญชนะ + สระ + วรรณยุกต์) การตัดกลาง cluster ทำให้วรรณยุกต์
+    ลอยหลุด เคยเกิดกับ hotbar ที่ตัด "เมล็ดหัวผักกาด" เป็น "เมล็" ถ้าพื้นที่ไม่พอ
+    ให้ใช้ `clip_contents = true` หรือย้ายข้อความไปที่ที่กว้างพอ **ห้ามตัดเอง**
+14c. ฟอนต์ default ของ Godot 4.7 รองรับไทยถูกต้องแล้ว ไม่ต้องหาฟอนต์ใหม่
+
 ### พื้นที่และขนาด (2.5D)
 15. **ห้ามใช้ขนาด sprite เป็นขนาดใน gameplay** — sprite เปลี่ยนได้ กฎเกมต้องไม่เปลี่ยนตาม
 16. ทุก world object ต้องแยก 4 อย่างออกจากกันชัดเจน:

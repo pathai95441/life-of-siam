@@ -8,7 +8,8 @@
 | เฟส | ชื่อ | สถานะ |
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
-| **W** | **World-object model (2.5D foundation)** | 🔵 **กำลังทำ** |
+| **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
+| **W** | **World-object model (2.5D foundation)** | 🔵 รอยืนยัน canonical scale |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -40,7 +41,7 @@
 | ต้องมีก่อน | สถานะ |
 |---|---|
 | `GAME_DESIGN.md` §2 canonical scale ที่พี่ยืนยันแล้ว | ⛔ **ยังไม่ยืนยัน — บล็อกอยู่** |
-| ตัดสินใจโปรเจกชัน (oblique vs isometric) | ⛔ ยังไม่ตัดสินใจ |
+| ตัดสินใจโปรเจกชัน (oblique vs isometric) | ✅ **oblique 3/4** |
 | `GameConstants.TILE_SIZE` | ✅ มี |
 | `Interactable` + `InteractionProbe` | ✅ มี — จะ refactor ไม่เขียนใหม่ |
 | `smoke_test` เป็น regression baseline | ✅ มี 50/50 |
@@ -112,7 +113,7 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 | ระดับ | ความเสี่ยง | ลดอย่างไร |
 |---|---|---|
 | 🔴 | **ยังไม่ยืนยัน canonical scale** — ถ้าตารางใน `GAME_DESIGN.md` เปลี่ยนหลังผมทำ W2–W5 ต้องรื้อ `.tres` ทั้งหมด | **บล็อกเฟสไว้จนพี่ยืนยันตาราง** ค่าตัวเลขอยู่ที่เดียวเพื่อให้แก้ครั้งเดียวจบ |
-| 🔴 | **โปรเจกชันยังไม่ตัดสินใจ** — isometric กับ oblique ให้คณิตศาสตร์ W1 ต่างกันคนละเรื่อง | บล็อกเช่นกัน · W1 ออกแบบให้สลับสูตรได้ที่จุดเดียว |
+| ✅ | ~~โปรเจกชันยังไม่ตัดสินใจ~~ | ปิดแล้ว: oblique 3/4 · W1 ยังออกแบบให้สลับสูตรได้ที่จุดเดียว |
 | 🟠 | refactor `FarmGrid`/`InteractionProbe` ที่ทำงานอยู่แล้วอาจพัง | `smoke_test` เป็น baseline · W6 อยู่ท้ายสุด · ทำ task ละ commit |
 | 🟠 | y_sort ของ Godot เรียงด้วย screen y ไม่ใช่ world y — พอมี depth ratio อาจเรียงผิด | W7 มีเทสต์ฉากเฉพาะ + ต้องยืนยันด้วยตา |
 | 🟡 | over-engineering — สร้าง abstraction เกินที่เกมต้องใช้ | ยึดกฎ: ทำแค่ที่ 8 magic number ปัจจุบันต้องใช้ ไม่เพิ่ม field เผื่ออนาคต |
@@ -130,8 +131,9 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 | D3 | collision magic number 8 จุด | no magic numbers | = Task W3–W5 |
 | D4 | ธง `talked_<npc>_day_<n>` สะสมไม่มีขอบเขต ทำไฟล์เซฟบวม | หนี้ #6 เดิม | เฟส 1 (ก่อนเพิ่ม NPC) |
 | D5 | ไม่มี `AGENTS.md` / `IMPLEMENTATION_PLAN.md` | — | ✅ เสร็จแล้ว |
-| D6 | **UI ใหญ่เกินใช้งาน** — default font บน base viewport 640×360 ทำให้ตัวอักษรกิน 1/5 ของจอ | — | เฟส 1 (เร่งด่วนขึ้น) |
-| D7 | **hotbar ถูกตัดขอบล่างจอ** — เลขจำนวนและชื่อของถูก clip | — | เฟส 1 |
-| D8 | **กล้องไม่มี limit** — เห็นพื้นเทานอกขอบโลก | — | เฟส 1 |
+| D6 | ~~UI ใหญ่เกินใช้งาน~~ | — | ✅ เฟส V — `main_theme.tres` |
+| D7 | ~~hotbar ถูกตัดขอบล่างจอ~~ | — | ✅ เฟส V — cell แสดงเลขปุ่ม+จำนวน ชื่อเต็มอยู่เหนือ hotbar |
+| D8 | ~~กล้องไม่มี limit~~ | — | ✅ เฟส V — `World.bounds` → `Player.set_camera_limits()` + ขยายโลกเป็น 960×720 |
+| D11 | **ตัด string ไทยด้วย `.left(n)` ทำให้วรรณยุกต์หลุด grapheme** — พบและแก้แล้วใน hotbar แต่เป็นกับดักที่จะเกิดซ้ำ | — | ✅ แก้ที่ต้นเหตุ (เลิกตัดชื่อ) · บันทึกเป็นข้อห้ามใน AGENTS.md |
 | D9 | **scale ไม่สอดคล้อง** — ตัวละคร ~20px แต่ตัวอักษร ~32px | 2.5D rule 18 | เฟส W (แก้พร้อม canonical scale) |
 | D10 | ~~ฟอนต์ไทยจะพัง~~ **ไม่จริง** — default font ของ Godot 4.7 เรนเดอร์ไทยถูกต้อง | — | ปิด ไม่ต้องทำ |

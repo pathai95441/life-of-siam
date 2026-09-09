@@ -88,6 +88,17 @@ func farm_grid() -> FarmGrid:
 	return get_tree().get_first_node_in_group(&"farm_grid") as FarmGrid
 
 
+## Clamps the follow camera to [param bounds] (world pixels) so the view never
+## shows past the edge of the map. The level owns the bounds; the player only
+## owns the camera, which is why this is a setter and not an export.
+func set_camera_limits(bounds: Rect2) -> void:
+	camera.limit_left = int(bounds.position.x)
+	camera.limit_top = int(bounds.position.y)
+	camera.limit_right = int(bounds.end.x)
+	camera.limit_bottom = int(bounds.end.y)
+	camera.reset_smoothing()
+
+
 func lock(reason: StringName = &"dialogue") -> void:
 	velocity = Vector2.ZERO
 	if state_machine.has_state(&"locked"):

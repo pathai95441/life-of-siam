@@ -42,6 +42,14 @@ const INVENTORY_SLOTS: int = 30
 const HOTBAR_SLOTS: int = 5
 const DEFAULT_STACK_SIZE: int = 99
 
+# --- UI ---
+## Hotbar cell edge in base-viewport pixels. Font sizes live in
+## resources/themes/main_theme.tres; this is here because hud.gd builds the
+## cells in code and must not carry a literal.
+const HOTBAR_CELL_SIZE: int = 30
+const INVENTORY_CELL_SIZE: int = 30
+const INVENTORY_COLUMNS: int = 10
+
 # --- Physics layers (1-indexed bit positions, mirrors project.godot) ---
 enum Layer { WORLD = 1, PLAYER = 2, NPC = 3, INTERACTABLE = 4, TRIGGER = 5 }
 

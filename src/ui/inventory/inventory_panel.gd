@@ -43,11 +43,12 @@ func _set_open(open: bool) -> void:
 func _build() -> void:
 	for child in grid.get_children():
 		child.queue_free()
-	grid.columns = 10
+	grid.columns = GameConstants.INVENTORY_COLUMNS
+	var edge := float(GameConstants.INVENTORY_CELL_SIZE)
 	for i in GameConstants.INVENTORY_SLOTS:
 		var button := Button.new()
 		button.name = "Slot%d" % i
-		button.custom_minimum_size = Vector2(30, 30)
+		button.custom_minimum_size = Vector2(edge, edge)
 		button.clip_text = true
 		button.pressed.connect(_on_slot_pressed.bind(i))
 		grid.add_child(button)
