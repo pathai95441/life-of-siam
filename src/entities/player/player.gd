@@ -23,6 +23,9 @@ var input_direction: Vector2 = Vector2.ZERO
 @onready var probe: InteractionProbe = $InteractionProbe
 @onready var tool_handler: ToolHandler = $ToolHandler
 @onready var camera: Camera2D = $Camera2D
+## Sizes this body's collider from wo_player.tres. The player's own extents are
+## data like everything else's, so nothing here carries a shape.
+@onready var world_body: WorldBody = $WorldBody
 
 
 func _ready() -> void:
@@ -37,6 +40,7 @@ func _ready() -> void:
 	EventBus.dialogue_finished.connect(_on_dialogue_finished)
 
 	probe.point_towards(facing)
+	_fit_placeholder_sprite()
 	EventBus.player_spawned.emit(self)
 
 
@@ -45,6 +49,21 @@ func _exit_tree() -> void:
 
 
 # --- Shared helpers used by states -------------------------------------------
+
+## Scales the placeholder icon to the height the data declares, with its feet
+## on the ground position. Derived from data, never the reverse: art must
+## follow the declared size, not define it.
+##
+## Temporary. Real sprites get authored at the right size and this goes away
+## along with the icon.
+func _fit_placeholder_sprite() -> void:
+	var texture := sprite.texture
+	if texture == null or world_body.data == null:
+		return
+	var target_height := world_body.data.height * WorldSpace.height_px()
+	sprite.scale = Vector2.ONE * (target_height / float(texture.get_height()))
+	sprite.position = Vector2(0.0, -target_height * 0.5)
+
 
 func read_input() -> Vector2:
 	input_direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")

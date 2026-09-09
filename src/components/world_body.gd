@@ -34,7 +34,11 @@ const INTERACTION_SHAPE_NAME := "WorldBodyInteraction"
 
 
 func _ready() -> void:
-	rebuild()
+	# Deferred, not immediate: during scene instantiation the parent is still
+	# setting up its children and the engine rejects add_child outright
+	# ("Parent node is busy setting up children"). One frame later it is safe,
+	# and the deferred queue is flushed before gameplay runs.
+	rebuild.call_deferred()
 
 
 ## Recreates both shapes from the current [member data]. Public so a tool or a

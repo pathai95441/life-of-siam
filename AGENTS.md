@@ -51,6 +51,19 @@ Godot 4.7.2 อยู่ใน PATH เป็น `godot`
 13. ห้าม god class / giant manager
 14. `@export` ชื่อสั้นต้องเช็คก่อนว่าชนกับ property ของคลาส engine ไหม — **มันเป็น parse error ไม่ใช่ warning** (เคยเสียเวลาไปกับ `priority` บน `Area2D` ที่ลาม 8 สคริปต์) ชื่อเสี่ยง: `position` `scale` `visible` `mode` `offset` `size` `speed` `disabled` `monitoring` `priority`
 
+### เขียนไฟล์ .tscn ด้วยมือ
+14a. **exported node reference ต้องมี `node_paths=` ใน header ของ node** ไม่ใช่แค่
+    `NodePath(...)` ในตัว property เช่น
+    `[node name="WorldBody" type="Node" parent="." node_paths=PackedStringArray("collision_body")]`
+    ถ้าขาด `node_paths=` Godot จะ**ไม่ resolve** ให้เป็น node reference แล้ว property
+    จะเป็น `null` เงียบ ๆ ไม่มี error — เสียเวลาไปแล้วครั้งหนึ่งกับ `player.tscn`
+    ถ้าไม่แน่ใจ format ให้ Godot เขียนเอง: instantiate ฉาก ตั้งค่า แล้ว
+    `PackedScene.pack()` + `ResourceSaver.save()` ทับไฟล์ แล้วอ่านผลลัพธ์
+14d. **ถ้าสคริปต์ของฉากที่สั่งรัน parse ไม่ผ่าน Godot headless จะค้าง ไม่ใช่ออกด้วย error**
+    ถ้ารันแล้วไม่มี output เลย ให้สงสัย parse error ก่อน แล้วเช็คด้วย
+    `--editor --quit` ซึ่งรายงาน parse error ตรง ๆ (`pkill -9 -f "godot "` เพื่อล้าง
+    process ที่ค้าง — pattern `Godot.app/...` ไม่แมตช์เพราะรันผ่าน symlink `godot`)
+
 ### ข้อความไทย
 14b. **ห้ามตัด string ไทยด้วย `.left(n)` / `.substr()` ตามจำนวนตัวอักษร** — ภาษาไทยมี
     grapheme cluster (พยัญชนะ + สระ + วรรณยุกต์) การตัดกลาง cluster ทำให้วรรณยุกต์

@@ -5,12 +5,15 @@ extends Area2D
 ## "Best" = highest priority, nearest on a tie. Focus changes are broadcast so
 ## the HUD can show a prompt without polling every frame.
 
-## How far in front of the actor the probe sits, in pixels.
-@export var reach: float = 12.0
+## How far in front of the actor the probe sits, in world units.
+@export var reach_units: float = GameConstants.PROBE_REACH_UNITS
 
 var focused: Interactable = null
 
 var _actor: Node2D
+
+
+const SENSOR_SHAPE_NAME := "ProbeSensor"
 
 
 func _ready() -> void:
@@ -18,13 +21,33 @@ func _ready() -> void:
 	collision_layer = 0
 	collision_mask = GameConstants.layer_mask(GameConstants.Layer.INTERACTABLE)
 	monitoring = true
+	# Deferred for the same reason as WorldBody.rebuild -- see that comment.
+	_build_sensor.call_deferred()
+
+
+## Built here rather than authored, for the same reason [WorldBody] builds its
+## shapes: a sensor size sitting in a .tscn is a number nobody revisits.
+func _build_sensor() -> void:
+	var shape_node := get_node_or_null(SENSOR_SHAPE_NAME) as CollisionShape2D
+	if shape_node == null:
+		shape_node = CollisionShape2D.new()
+		shape_node.name = SENSOR_SHAPE_NAME
+		add_child(shape_node)
+	var rect := RectangleShape2D.new()
+	rect.size = WorldSpace.footprint_screen_size(GameConstants.PROBE_SIZE_UNITS)
+	shape_node.shape = rect
 
 
 ## Called by the actor whenever its facing changes.
+##
+## The offset is measured on the un-foreshortened axis for now, so it stays
+## consistent with movement and with FarmGrid's square cells. Task W6 moves
+## movement, targeting and the grid into projected space together -- doing only
+## one of them here would put the prompt somewhere the tool does not reach.
 func point_towards(facing: Vector2) -> void:
 	if facing.is_zero_approx():
 		return
-	position = facing.normalized() * reach
+	position = facing.normalized() * reach_units * WorldSpace.ground_px()
 
 
 func _physics_process(_delta: float) -> void:

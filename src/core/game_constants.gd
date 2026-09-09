@@ -45,6 +45,11 @@ const PLAYER_RUN_SPEED: float = 120.0
 const PLAYER_ACCELERATION: float = 900.0
 const PLAYER_FRICTION: float = 1200.0
 const PLAYER_MAX_STAMINA: float = 100.0
+## How far in front of the player the interaction probe sits, in world units.
+const PROBE_REACH_UNITS: float = 1.0
+## Sensor extent of the probe, in world units. Small on purpose: the probe is
+## effectively a point, and range comes from each object's interaction_reach.
+const PROBE_SIZE_UNITS := Vector2(0.5, 0.5)
 const STAMINA_PER_TOOL_USE: float = 2.0
 const STAMINA_PER_RUN_SECOND: float = 1.5
 

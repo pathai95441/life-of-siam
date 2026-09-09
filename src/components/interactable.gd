@@ -41,3 +41,9 @@ func interact(actor: Node) -> void:
 
 func label() -> String:
 	return prompt if not prompt.is_empty() else prompt_en
+
+
+## Node name, for diagnostics. Distinct from [method label], which is the verb
+## shown to the player.
+func owner_label() -> String:
+	return String(name)

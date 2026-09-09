@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
@@ -9,52 +9,43 @@
 [ext_resource type="Script" path="res://src/entities/player/states/player_walk.gd" id="7_walk"]
 [ext_resource type="Script" path="res://src/entities/player/states/player_use_tool.gd" id="8_use"]
 [ext_resource type="Script" path="res://src/entities/player/states/player_locked.gd" id="9_locked"]
+[ext_resource type="Script" path="res://src/components/world_body.gd" id="10_body"]
+[ext_resource type="Resource" path="res://resources/world_objects/wo_player.tres" id="11_data"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
-radius = 5.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_probe"]
-size = Vector2(14, 14)
-
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" unique_id=82792315]
 motion_mode = 1
 script = ExtResource("1_player")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -6)
-scale = Vector2(0.11, 0.11)
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=676267236]
 texture = ExtResource("2_icon")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_body")
+[node name="WorldBody" type="Node" parent="." unique_id=1682882058 node_paths=PackedStringArray("collision_body")]
+script = ExtResource("10_body")
+data = ExtResource("11_data")
+collision_body = NodePath("..")
 
-[node name="InteractionProbe" type="Area2D" parent="."]
-position = Vector2(0, 12)
+[node name="InteractionProbe" type="Area2D" parent="." unique_id=769015407]
 script = ExtResource("3_probe")
-reach = 12.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionProbe"]
-shape = SubResource("RectangleShape2D_probe")
-
-[node name="ToolHandler" type="Node" parent="."]
+[node name="ToolHandler" type="Node" parent="." unique_id=770172343]
 script = ExtResource("4_tool")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=111126534]
 script = ExtResource("5_fsm")
 initial_state = NodePath("Idle")
 
-[node name="Idle" type="Node" parent="StateMachine"]
+[node name="Idle" type="Node" parent="StateMachine" unique_id=2110744332]
 script = ExtResource("6_idle")
 
-[node name="Walk" type="Node" parent="StateMachine"]
+[node name="Walk" type="Node" parent="StateMachine" unique_id=1486770211]
 script = ExtResource("7_walk")
 
-[node name="UseTool" type="Node" parent="StateMachine"]
+[node name="UseTool" type="Node" parent="StateMachine" unique_id=544614167]
 script = ExtResource("8_use")
 
-[node name="Locked" type="Node" parent="StateMachine"]
+[node name="Locked" type="Node" parent="StateMachine" unique_id=503499209]
 script = ExtResource("9_locked")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=967880475]
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
