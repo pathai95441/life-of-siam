@@ -1,0 +1,76 @@
+# AGENTS.md — วิธีทำงานกับโปรเจกต์นี้
+
+เอกสารนี้คือกฎการทำงาน อ่านก่อนแก้โค้ดทุกครั้ง
+เจ้าของโปรเจกต์: Pathai · บทบาทของ agent: Lead Game Engineer
+
+## อ่านอะไรก่อน
+
+| ลำดับ | ไฟล์ | ใช้ตัดสินอะไร |
+|---|---|---|
+| 1 | `AGENTS.md` (ไฟล์นี้) | วิธีทำงาน, กฎที่ห้ามละเมิด |
+| 2 | `GAME_DESIGN.md` | ตัวเกมคืออะไร, canonical scale, ข้อมูล gameplay |
+| 3 | `docs/ARCHITECTURE.md` | โครงสร้างจริง, technical debt, ความเสี่ยง |
+| 4 | `IMPLEMENTATION_PLAN.md` | เฟส, task, definition of done |
+
+## ภาษา
+
+- **prose ที่คุยกับเจ้าของโปรเจกต์ / เอกสาร / string ในเกม → ภาษาไทย**
+- **identifier / `##` doc comment / commit message → ภาษาอังกฤษ**
+
+## คำสั่งที่ต้องรันได้ทุกครั้งก่อนบอกว่าเสร็จ
+
+```bash
+# compile ทั้งโปรเจกต์ — ต้องไม่มี SCRIPT ERROR
+godot --headless --path . --editor --quit
+
+# เทสต์ core loop — exit code ต้องเป็น 0
+godot --headless --path . tests/smoke_test.tscn
+```
+
+Godot 4.7.2 อยู่ใน PATH เป็น `godot`
+
+**ห้ามรายงานว่าสำเร็จถ้าไม่ได้รันสองคำสั่งนี้จริง**
+
+## กฎที่ห้ามละเมิด
+
+### กระบวนการ
+1. ตรวจของที่มีอยู่ก่อนแก้ ค้นด้วย `grep`/`find` — **ห้ามสมมติว่าระบบไม่มี**
+2. ห้ามเขียนระบบที่ทำงานอยู่แล้วใหม่ เว้นแต่มีเหตุผลทางสถาปัตยกรรมที่หนักแน่น
+3. ใช้ของที่มีอยู่ซ้ำ ห้ามทำฟังก์ชันซ้ำซ้อน
+4. ห้ามสร้าง abstraction ที่ยังไม่จำเป็น
+5. ทำทีละ task ที่ทดสอบผลได้ ห้ามลุยทั้งเฟสรอบเดียว
+6. ห้ามทำเฟสอนาคต เว้นแต่เป็น dependency — ถ้าจำเป็นให้ทำ **interface ขั้นต่ำ** เท่าที่เฟสนี้ต้องใช้
+
+### โค้ด
+7. ใช้ typed GDScript
+8. ข้อมูล gameplay อยู่ใน Resource ห้าม hardcode
+9. dependency ชี้ทางเดียว ห้าม circular
+10. ไฟล์ไม่ใหญ่ ฟังก์ชันไม่ใหญ่ — เพดานที่ใช้ในโปรเจกต์นี้: **ไฟล์ ≤ 250 บรรทัด, ฟังก์ชัน ≤ 40 บรรทัด**
+11. ห้าม magic number ในตรรกะเกม
+12. composition ก่อน inheritance
+13. ห้าม god class / giant manager
+14. `@export` ชื่อสั้นต้องเช็คก่อนว่าชนกับ property ของคลาส engine ไหม — **มันเป็น parse error ไม่ใช่ warning** (เคยเสียเวลาไปกับ `priority` บน `Area2D` ที่ลาม 8 สคริปต์) ชื่อเสี่ยง: `position` `scale` `visible` `mode` `offset` `size` `speed` `disabled` `monitoring` `priority`
+
+### พื้นที่และขนาด (2.5D)
+15. **ห้ามใช้ขนาด sprite เป็นขนาดใน gameplay** — sprite เปลี่ยนได้ กฎเกมต้องไม่เปลี่ยนตาม
+16. ทุก world object ต้องแยก 4 อย่างออกจากกันชัดเจน:
+    - **logical footprint** — ที่ยืนบนพื้น (กฎเกมใช้อันนี้)
+    - **collision bounds** — สิ่งที่กันการเดิน
+    - **interaction bounds** — ระยะที่กด E ติด
+    - **visual bounds** — กรอบภาพ ใช้แค่วาดและ sort
+17. ขนาดทุกอย่างมาจาก Resource ไม่ใช่ตัวเลขในไฟล์ `.tscn`
+18. scale ต้องคงที่ข้าม Player / NPC / Tree / Building / Fence / Props — ดูตารางใน `GAME_DESIGN.md`
+
+## สถานะปัจจุบัน
+
+- git: `main` ผูก `git@github.com:pathai95441/life-of-siam.git` (SSH ใช้งานได้)
+- Godot 4.7.2 · renderer `gl_compatibility`
+- ทิศทางภาพ: **2.5D** — ตัวละคร 2D sprite, สิ่งแวดล้อมดูเป็น 3D (ตัดสินใจแล้ว ไม่ใช่ 2D top-down เดิม)
+- ยังไม่มีใครเห็นเกมรันบนจอจริง — headless ผ่านหมดแต่ยังไม่ได้กด F5
+
+## รูปแบบรายงานหลังจบแต่ละ task
+
+```
+TASK / STATUS / FILES CHANGED / IMPLEMENTATION SUMMARY
+TESTS RUN / TEST RESULTS / KNOWN ISSUES / NEXT TASK
+```
