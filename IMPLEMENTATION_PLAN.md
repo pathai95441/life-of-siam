@@ -9,7 +9,7 @@
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
-| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1 ✅ W2 ✅ |
+| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1 ✅ W2 ✅ W3 ✅ |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -68,13 +68,13 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **155 assertion ผ่านทั้งหมด** (`world_space` 35 · `world_object_data` 57 · `smoke` 50 · `world` 13)
+ชุดเทสต์ปัจจุบัน **175 assertion ผ่านทั้งหมด** (`world_space` 35 · `world_object_data` 57 · `world_body` 20 · `smoke` 50 · `world` 13)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
 | ~~**W1**~~ ✅ | `core/world_space.gd` — โปรเจกชัน world↔screen, footprint rect, depth key ทั้งหมดเป็น static | **เสร็จ: `tests/world_space_test.tscn` 35/35** |
 | ~~**W2**~~ ✅ | `data/world_object_data.gd` — Resource: footprint, height, origin, blocks_movement, interaction_reach + `.tres` 4 ตัว | **เสร็จ: `tests/world_object_data_test.tscn` 57/57** |
-| **W3** | `components/world_body.gd` — สร้าง collision + interaction shape จาก data ตอน `_ready` | เทียบ shape ที่สร้างกับค่าที่คำนวณจาก data, ยืนยันว่าไม่มี shape ใน `.tscn` เหลือ |
+| ~~**W3**~~ ✅ | `components/world_body.gd` — สร้าง collision + interaction shape จาก data ตอน `_ready` | **เสร็จ: `tests/world_body_test.tscn` 20/20** |
 | **W4** | ย้าย `Player` มาใช้ `world_body` ลบ shape ที่ hardcode | smoke test ยังผ่าน 50/50 + เทสต์ใหม่ว่า footprint ผู้เล่นตรง data |
 | **W5** | ย้าย `Npc` / `Bed` / `SignPost` มาใช้ `world_body` | ยัง interact ได้ทุกตัว, ไม่มี magic number เหลือใน entity `.tscn` |
 | **W6** | `FarmGrid` เรียก `WorldSpace` แทนการหาร `TILE_SIZE` เอง | cell math ให้ผลเดิมเป๊ะ (regression) + รองรับ depth ratio |
@@ -136,6 +136,7 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 | D6 | ~~UI ใหญ่เกินใช้งาน~~ | — | ✅ เฟส V — `main_theme.tres` |
 | D7 | ~~hotbar ถูกตัดขอบล่างจอ~~ | — | ✅ เฟส V — cell แสดงเลขปุ่ม+จำนวน ชื่อเต็มอยู่เหนือ hotbar |
 | D8 | ~~กล้องไม่มี limit~~ | — | ✅ เฟส V — `World.bounds` → `Player.set_camera_limits()` + ขยายโลกเป็น 960×720 |
+| D12 | **ขนาดที่ data สั่งต่างจากที่ฉากจิ้มไว้มาก** — เตียง collision 24×16 → **64×24**, interaction 32×28 → **128×56** ต้องดูด้วยตาตอน W5 ว่าเล่นได้จริง | — | W5 |
 | D11 | **ตัด string ไทยด้วย `.left(n)` ทำให้วรรณยุกต์หลุด grapheme** — พบและแก้แล้วใน hotbar แต่เป็นกับดักที่จะเกิดซ้ำ | — | ✅ แก้ที่ต้นเหตุ (เลิกตัดชื่อ) · บันทึกเป็นข้อห้ามใน AGENTS.md |
 | D9 | **scale ไม่สอดคล้อง** — ตัวละคร ~20px แต่ตัวอักษร ~32px | 2.5D rule 18 | เฟส W (แก้พร้อม canonical scale) |
 | D10 | ~~ฟอนต์ไทยจะพัง~~ **ไม่จริง** — default font ของ Godot 4.7 เรนเดอร์ไทยถูกต้อง | — | ปิด ไม่ต้องทำ |
