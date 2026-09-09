@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/data/item_data.gd" id="1_item"]
+[ext_resource type="Resource" path="res://resources/crops/crop_turnip.tres" id="2_crop"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"turnip_seed"
+display_name = "Turnip Seeds"
+display_name_th = "เมล็ดหัวผักกาด"
+description = "ปลูกในฤดูใบไม้ผลิและฤดูฝน"
+category = 1
+stack_size = 99
+sell_price = 5
+buy_price = 20
+crop = ExtResource("2_crop")

@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/dialogue/dialogue_box.gd" id="1_dlg"]
+
+[node name="DialogueBox" type="CanvasLayer"]
+layer = 4
+script = ExtResource("1_dlg")
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -110.0
+offset_right = 260.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+theme_override_constants/separation = 8
+
+[node name="Portrait" type="TextureRect" parent="Panel/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 72)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SpeakerLabel" type="Label" parent="Panel/HBox/VBox"]
+unique_name_in_owner = true
+text = "ชื่อ"
+
+[node name="TextLabel" type="RichTextLabel" parent="Panel/HBox/VBox"]
+unique_name_in_owner = true
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+text = ""
+
+[node name="Hint" type="Label" parent="Panel/HBox/VBox"]
+horizontal_alignment = 2
+text = "[E] ต่อไป"

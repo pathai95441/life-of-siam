@@ -1,0 +1,60 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
+[ext_resource type="Script" path="res://src/systems/interaction/interaction_probe.gd" id="3_probe"]
+[ext_resource type="Script" path="res://src/components/tool_handler.gd" id="4_tool"]
+[ext_resource type="Script" path="res://src/components/state_machine.gd" id="5_fsm"]
+[ext_resource type="Script" path="res://src/entities/player/states/player_idle.gd" id="6_idle"]
+[ext_resource type="Script" path="res://src/entities/player/states/player_walk.gd" id="7_walk"]
+[ext_resource type="Script" path="res://src/entities/player/states/player_use_tool.gd" id="8_use"]
+[ext_resource type="Script" path="res://src/entities/player/states/player_locked.gd" id="9_locked"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 5.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_probe"]
+size = Vector2(14, 14)
+
+[node name="Player" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -6)
+scale = Vector2(0.11, 0.11)
+texture = ExtResource("2_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="InteractionProbe" type="Area2D" parent="."]
+position = Vector2(0, 12)
+script = ExtResource("3_probe")
+reach = 12.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionProbe"]
+shape = SubResource("RectangleShape2D_probe")
+
+[node name="ToolHandler" type="Node" parent="."]
+script = ExtResource("4_tool")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("5_fsm")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("6_idle")
+
+[node name="Walk" type="Node" parent="StateMachine"]
+script = ExtResource("7_walk")
+
+[node name="UseTool" type="Node" parent="StateMachine"]
+script = ExtResource("8_use")
+
+[node name="Locked" type="Node" parent="StateMachine"]
+script = ExtResource("9_locked")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0

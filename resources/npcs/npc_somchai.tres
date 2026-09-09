@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/data/npc_data.gd" id="1_npc"]
+[ext_resource type="Resource" path="res://resources/dialogue/dlg_somchai_default.tres" id="2_dlg"]
+
+[resource]
+script = ExtResource("1_npc")
+id = &"somchai"
+display_name = "Somchai"
+display_name_th = "สมชาย"
+default_dialogue = ExtResource("2_dlg")
+max_hearts = 10
+liked_items = Array[StringName]([&"chili", &"turnip"])
+disliked_items = Array[StringName]([])

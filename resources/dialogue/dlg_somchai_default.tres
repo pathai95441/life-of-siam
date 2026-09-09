@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/data/dialogue_data.gd" id="1_dlg"]
+[ext_resource type="Script" path="res://src/data/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="Resource_line1"]
+script = ExtResource("2_line")
+speaker = "สมชาย"
+text = "สวัสดี! มาถึงไร่แล้วหรือ ที่นี่ดินดีนะ"
+
+[sub_resource type="Resource" id="Resource_line2"]
+script = ExtResource("2_line")
+speaker = "สมชาย"
+text = "ลองพลิกดินด้วยจอบ แล้วหยอดเมล็ด อย่าลืมรดน้ำทุกเช้า"
+
+[resource]
+script = ExtResource("1_dlg")
+id = &"somchai_default"
+lines = Array[DialogueLine]([SubResource("Resource_line1"), SubResource("Resource_line2")])
+sets_flag = &"met_somchai"
+one_shot = false

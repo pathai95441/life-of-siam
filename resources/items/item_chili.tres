@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"chili"
+display_name = "Chili"
+display_name_th = "พริก"
+description = "เผ็ดร้อน เก็บได้เรื่อย ๆ"
+category = 2
+stack_size = 99
+sell_price = 55
+buy_price = 0

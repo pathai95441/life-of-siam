@@ -1,0 +1,91 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://src/world/world.gd" id="1_world"]
+[ext_resource type="Script" path="res://src/systems/farming/farm_grid.gd" id="2_farm"]
+[ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://src/entities/npc/npc.tscn" id="4_npc"]
+[ext_resource type="Resource" path="res://resources/npcs/npc_somchai.tres" id="5_somchai"]
+[ext_resource type="PackedScene" path="res://src/entities/props/bed.tscn" id="6_bed"]
+[ext_resource type="PackedScene" path="res://src/entities/props/sign_post.tscn" id="7_sign"]
+[ext_resource type="PackedScene" path="res://src/ui/hud/hud.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://src/ui/dialogue/dialogue_box.tscn" id="9_dialogue"]
+[ext_resource type="PackedScene" path="res://src/ui/inventory/inventory_panel.tscn" id="10_inventory"]
+[ext_resource type="PackedScene" path="res://src/ui/menus/pause_menu.tscn" id="11_pause"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h"]
+size = Vector2(600, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v"]
+size = Vector2(16, 460)
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_world")
+default_spawn = NodePath("SpawnPoints/Default")
+
+[node name="Background" type="ColorRect" parent="."]
+z_index = -100
+offset_left = -300.0
+offset_top = -230.0
+offset_right = 300.0
+offset_bottom = 230.0
+color = Color(0.29, 0.44, 0.24, 1)
+mouse_filter = 2
+
+[node name="FarmGrid" type="Node2D" parent="."]
+script = ExtResource("2_farm")
+arable_region = Rect2i(-16, -12, 32, 24)
+debug_draw = true
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, -230)
+shape = SubResource("RectangleShape2D_h")
+
+[node name="Bottom" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(0, 230)
+shape = SubResource("RectangleShape2D_h")
+
+[node name="Left" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(-300, 0)
+shape = SubResource("RectangleShape2D_v")
+
+[node name="Right" type="CollisionShape2D" parent="Bounds"]
+position = Vector2(300, 0)
+shape = SubResource("RectangleShape2D_v")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+position = Vector2(0, 120)
+
+[node name="Somchai" parent="Entities" instance=ExtResource("4_npc")]
+position = Vector2(80, 150)
+npc_data = ExtResource("5_somchai")
+
+[node name="Bed" parent="Entities" instance=ExtResource("6_bed")]
+position = Vector2(-220, -170)
+
+[node name="SignPost" parent="Entities" instance=ExtResource("7_sign")]
+position = Vector2(-30, 150)
+
+[node name="SpawnPoints" type="Node" parent="."]
+
+[node name="Default" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(0, 120)
+
+[node name="Porch" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(-200, -140)
+
+[node name="Ui" type="Node" parent="."]
+
+[node name="Hud" parent="Ui" instance=ExtResource("8_hud")]
+
+[node name="DialogueBox" parent="Ui" instance=ExtResource("9_dialogue")]
+
+[node name="InventoryPanel" parent="Ui" instance=ExtResource("10_inventory")]
+
+[node name="PauseMenu" parent="Ui" instance=ExtResource("11_pause")]

@@ -1,0 +1,19 @@
+# Godot text resources — keep LF so diffs stay readable across machines
+*.gd      text eol=lf diff
+*.tscn    text eol=lf
+*.tres    text eol=lf
+*.godot   text eol=lf
+*.cfg     text eol=lf
+*.import  text eol=lf
+
+# Binary assets — never diff or merge
+*.png     binary
+*.jpg     binary
+*.webp    binary
+*.ogg     binary
+*.wav     binary
+*.mp3     binary
+*.ttf     binary
+*.otf     binary
+*.res     binary
+*.scn     binary

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CropData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/data/crop_data.gd" id="1_crop"]
+[ext_resource type="Resource" path="res://resources/items/item_turnip.tres" id="2_produce"]
+
+[resource]
+script = ExtResource("1_crop")
+id = &"turnip"
+display_name = "Turnip"
+display_name_th = "หัวผักกาด"
+stage_days = Array[int]([1, 2, 2])
+produce = ExtResource("2_produce")
+produce_min = 1
+produce_max = 2
+seasons = 5
+regrow_days = 0
+drought_tolerance = 2

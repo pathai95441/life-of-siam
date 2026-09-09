@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CropData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/data/crop_data.gd" id="1_crop"]
+[ext_resource type="Resource" path="res://resources/items/item_chili.tres" id="2_produce"]
+
+[resource]
+script = ExtResource("1_crop")
+id = &"chili"
+display_name = "Chili"
+display_name_th = "พริก"
+stage_days = Array[int]([2, 2, 3])
+produce = ExtResource("2_produce")
+produce_min = 1
+produce_max = 3
+seasons = 6
+regrow_days = 3
+drought_tolerance = 3

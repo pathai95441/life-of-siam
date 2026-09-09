@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"watering_can"
+display_name = "Watering Can"
+display_name_th = "บัวรดน้ำ"
+description = "รดน้ำแปลงที่พลิกดินไว้"
+category = 0
+stack_size = 1
+tool_type = 2
+stamina_cost = 1.0
