@@ -9,7 +9,7 @@
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
-| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1 ✅ |
+| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1 ✅ W2 ✅ |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -68,10 +68,12 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
+ชุดเทสต์ปัจจุบัน **155 assertion ผ่านทั้งหมด** (`world_space` 35 · `world_object_data` 57 · `smoke` 50 · `world` 13)
+
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
 | ~~**W1**~~ ✅ | `core/world_space.gd` — โปรเจกชัน world↔screen, footprint rect, depth key ทั้งหมดเป็น static | **เสร็จ: `tests/world_space_test.tscn` 35/35** |
-| **W2** | `data/world_object_data.gd` — Resource: footprint, height, origin, blocks_movement, interaction_reach + `.tres` ตามตาราง scale | โหลด `.tres` ผ่าน `Database` ได้, ค่าตรงตาราง, validation จับค่าติดลบ |
+| ~~**W2**~~ ✅ | `data/world_object_data.gd` — Resource: footprint, height, origin, blocks_movement, interaction_reach + `.tres` 4 ตัว | **เสร็จ: `tests/world_object_data_test.tscn` 57/57** |
 | **W3** | `components/world_body.gd` — สร้าง collision + interaction shape จาก data ตอน `_ready` | เทียบ shape ที่สร้างกับค่าที่คำนวณจาก data, ยืนยันว่าไม่มี shape ใน `.tscn` เหลือ |
 | **W4** | ย้าย `Player` มาใช้ `world_body` ลบ shape ที่ hardcode | smoke test ยังผ่าน 50/50 + เทสต์ใหม่ว่า footprint ผู้เล่นตรง data |
 | **W5** | ย้าย `Npc` / `Bed` / `SignPost` มาใช้ `world_body` | ยัง interact ได้ทุกตัว, ไม่มี magic number เหลือใน entity `.tscn` |

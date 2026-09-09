@@ -9,12 +9,14 @@ var items: Dictionary[StringName, ItemData] = {}
 var crops: Dictionary[StringName, CropData] = {}
 var npcs: Dictionary[StringName, NpcData] = {}
 var dialogues: Dictionary[StringName, DialogueData] = {}
+var world_objects: Dictionary[StringName, WorldObjectData] = {}
 
 const _DIRS := {
 	"items": "res://resources/items",
 	"crops": "res://resources/crops",
 	"npcs": "res://resources/npcs",
 	"dialogue": "res://resources/dialogue",
+	"world_objects": "res://resources/world_objects",
 }
 
 
@@ -31,8 +33,20 @@ func _load_all() -> void:
 		_register(npcs, res)
 	for res in _scan(_DIRS["dialogue"]):
 		_register(dialogues, res)
-	print("[Database] %d items, %d crops, %d npcs, %d dialogues"
-		% [items.size(), crops.size(), npcs.size(), dialogues.size()])
+	for res in _scan(_DIRS["world_objects"]):
+		_register(world_objects, res)
+	_validate_world_objects()
+	print("[Database] %d items, %d crops, %d npcs, %d dialogues, %d world objects"
+		% [items.size(), crops.size(), npcs.size(), dialogues.size(), world_objects.size()])
+
+
+## Physical definitions are load-bearing for collision and interaction, so a
+## malformed one is reported at boot rather than becoming a mystery later.
+func _validate_world_objects() -> void:
+	for id in world_objects:
+		var errors := (world_objects[id] as WorldObjectData).validation_errors()
+		for error in errors:
+			push_error("Database: world object '%s' is invalid: %s" % [id, error])
 
 
 func _scan(dir_path: String) -> Array[Resource]:
@@ -80,6 +94,10 @@ func get_npc(id: StringName) -> NpcData:
 
 func get_dialogue(id: StringName) -> DialogueData:
 	return dialogues.get(id) as DialogueData
+
+
+func get_world_object(id: StringName) -> WorldObjectData:
+	return world_objects.get(id) as WorldObjectData
 
 
 func has_item(id: StringName) -> bool:
