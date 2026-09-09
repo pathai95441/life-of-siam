@@ -34,7 +34,7 @@ mouse_filter = 2
 
 [node name="FarmGrid" type="Node2D" parent="."]
 script = ExtResource("2_farm")
-arable_region = Rect2i(-16, -12, 32, 24)
+arable_region = Rect2i(-12, -9, 24, 18)
 debug_draw = true
 
 [node name="Bounds" type="StaticBody2D" parent="."]

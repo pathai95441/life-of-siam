@@ -5,8 +5,22 @@ extends Object
 ## Pure constants only — no state, never instantiated. Anything that needs to
 ## change at runtime belongs in [GameState] or [SettingsManager] instead.
 
-# --- World grid ---
-const TILE_SIZE: int = 16
+# --- Canonical scale (see GAME_DESIGN.md section 2) ---------------------------
+# One world unit (wu) is one grid cell and about one metre. Every dimension in
+# the game derives from these three numbers; nothing else may define scale.
+
+## Screen pixels per world unit across the ground plane.
+const GROUND_PX_PER_UNIT: int = 32
+## Screen pixels per world unit of elevation.
+const HEIGHT_PX_PER_UNIT: int = 32
+## Foreshortening of the depth axis for the oblique 3/4 projection.
+## 1.0 would be plain top-down; 0.5 tilts the ground plane.
+const DEPTH_RATIO: float = 0.5
+
+## Grid cell edge in pixels. Identical to [constant GROUND_PX_PER_UNIT] by
+## definition -- one cell is one world unit -- and kept under its own name
+## while grid code still measures in pixels. Task W6 removes it.
+const TILE_SIZE: int = GROUND_PX_PER_UNIT
 const TILE_SIZE_V := Vector2i(TILE_SIZE, TILE_SIZE)
 
 # --- Time ---

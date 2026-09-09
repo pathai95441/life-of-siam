@@ -9,7 +9,7 @@
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
-| **W** | **World-object model (2.5D foundation)** | 🔵 รอยืนยัน canonical scale |
+| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1 ✅ |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -40,7 +40,7 @@
 
 | ต้องมีก่อน | สถานะ |
 |---|---|
-| `GAME_DESIGN.md` §2 canonical scale ที่พี่ยืนยันแล้ว | ⛔ **ยังไม่ยืนยัน — บล็อกอยู่** |
+| `GAME_DESIGN.md` §2 canonical scale ที่พี่ยืนยันแล้ว | ✅ **32 px/wu** |
 | ตัดสินใจโปรเจกชัน (oblique vs isometric) | ✅ **oblique 3/4** |
 | `GameConstants.TILE_SIZE` | ✅ มี |
 | `Interactable` + `InteractionProbe` | ✅ มี — จะ refactor ไม่เขียนใหม่ |
@@ -70,7 +70,7 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
-| **W1** | `core/world_space.gd` — โปรเจกชัน world↔screen, footprint rect, depth key ทั้งหมดเป็น static | unit test ล้วน ไม่ต้องเรนเดอร์: round-trip world→screen→world, ลำดับ depth ถูกต้อง |
+| ~~**W1**~~ ✅ | `core/world_space.gd` — โปรเจกชัน world↔screen, footprint rect, depth key ทั้งหมดเป็น static | **เสร็จ: `tests/world_space_test.tscn` 35/35** |
 | **W2** | `data/world_object_data.gd` — Resource: footprint, height, origin, blocks_movement, interaction_reach + `.tres` ตามตาราง scale | โหลด `.tres` ผ่าน `Database` ได้, ค่าตรงตาราง, validation จับค่าติดลบ |
 | **W3** | `components/world_body.gd` — สร้าง collision + interaction shape จาก data ตอน `_ready` | เทียบ shape ที่สร้างกับค่าที่คำนวณจาก data, ยืนยันว่าไม่มี shape ใน `.tscn` เหลือ |
 | **W4** | ย้าย `Player` มาใช้ `world_body` ลบ shape ที่ hardcode | smoke test ยังผ่าน 50/50 + เทสต์ใหม่ว่า footprint ผู้เล่นตรง data |
@@ -112,7 +112,7 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 
 | ระดับ | ความเสี่ยง | ลดอย่างไร |
 |---|---|---|
-| 🔴 | **ยังไม่ยืนยัน canonical scale** — ถ้าตารางใน `GAME_DESIGN.md` เปลี่ยนหลังผมทำ W2–W5 ต้องรื้อ `.tres` ทั้งหมด | **บล็อกเฟสไว้จนพี่ยืนยันตาราง** ค่าตัวเลขอยู่ที่เดียวเพื่อให้แก้ครั้งเดียวจบ |
+| ✅ | ~~ยังไม่ยืนยัน canonical scale~~ | ปิดแล้ว: 32 px/wu · ค่าอยู่ใน `GameConstants` 3 ตัว ใช้ผ่าน `WorldSpace` เท่านั้น แก้ที่เดียวจบ |
 | ✅ | ~~โปรเจกชันยังไม่ตัดสินใจ~~ | ปิดแล้ว: oblique 3/4 · W1 ยังออกแบบให้สลับสูตรได้ที่จุดเดียว |
 | 🟠 | refactor `FarmGrid`/`InteractionProbe` ที่ทำงานอยู่แล้วอาจพัง | `smoke_test` เป็น baseline · W6 อยู่ท้ายสุด · ทำ task ละ commit |
 | 🟠 | y_sort ของ Godot เรียงด้วย screen y ไม่ใช่ world y — พอมี depth ratio อาจเรียงผิด | W7 มีเทสต์ฉากเฉพาะ + ต้องยืนยันด้วยตา |

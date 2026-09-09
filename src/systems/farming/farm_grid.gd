@@ -14,7 +14,10 @@ extends Node2D
 const SAVE_ID := &"farm_grid"
 
 ## Tiles the player is allowed to till, as a rect in cell coordinates.
-@export var arable_region := Rect2i(-16, -12, 32, 24)
+## Must stay inside the owning level's bounds: one cell is
+## [constant GameConstants.TILE_SIZE] pixels, so 24x18 cells is 768x576 px
+## against the blockout map's 960x720.
+@export var arable_region := Rect2i(-12, -9, 24, 18)
 @export var debug_draw: bool = true
 
 var _cells: Dictionary[Vector2i, SoilCell] = {}

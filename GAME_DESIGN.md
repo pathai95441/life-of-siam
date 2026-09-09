@@ -28,9 +28,9 @@ Life simulation ในบรรยากาศไทย ผู้เล่นด
 | ชื่อ | ค่า | หมายเหตุ |
 |---|---|---|
 | **1 world unit (wu)** | = 1 ช่องกริด | หน่วยตรรกะที่กฎเกมใช้ |
-| **ground pixels per wu** | `16 px` | มาจาก `GameConstants.TILE_SIZE` ที่มีอยู่แล้ว |
-| ❓ **depth ratio** | `0.5` | ความลึก 1 wu กินพื้นที่จอ 8 px — ให้พื้นดูเอียงแบบ 3/4 view |
-| ❓ **height pixels per wu** | `16 px` | ความสูง 1 wu กินพื้นที่จอ 16 px |
+| ✅ **ground pixels per wu** | `32 px` | ยืนยันแล้ว — `GameConstants.GROUND_PX_PER_UNIT` |
+| ✅ **depth ratio** | `0.5` | ความลึก 1 wu กินพื้นที่จอ 16 px — พื้นเอียงแบบ 3/4 view |
+| ✅ **height pixels per wu** | `32 px` | ความสูง 1 wu กินพื้นที่จอ 32 px |
 
 ### แกน world space
 
@@ -43,8 +43,8 @@ Life simulation ในบรรยากาศไทย ผู้เล่นด
         └────── x (ขวา)
 
 ground plane = x-y  ·  ความสูง = z
-screen_x = x * 16
-screen_y = y * 16 * depth_ratio  -  z * 16
+screen_x = x * 32
+screen_y = y * 32 * 0.5  -  z * 32       (implemented in src/core/world_space.gd)
 เรียงหน้า-หลังด้วย world y (ค่ามาก = อยู่หน้า)
 ```
 
@@ -56,7 +56,7 @@ screen_y = y * 16 * depth_ratio  -  z * 16
 
 | วัตถุ | footprint (w × d) | height | กันเดิน | หมายเหตุ |
 |---|---|---|---|---|
-| ❓ **Player** | 0.6 × 0.4 | 1.8 | — | สูง ~1.8 wu = ผู้ใหญ่ ~1.8 ม. → **1 wu ≈ 1 เมตร** |
+| ✅ **Player** | 0.6 × 0.4 | 1.8 | — | สูง 1.8 wu = 58 px บนจอ · **1 wu ≈ 1 เมตร** |
 | ❓ NPC ผู้ใหญ่ | 0.6 × 0.4 | 1.8 | ✅ | เท่าผู้เล่น |
 | ❓ NPC เด็ก | 0.5 × 0.35 | 1.2 | ✅ | |
 | ❓ ต้นไม้เล็ก | 1.0 × 1.0 | 3.0 | ✅ | |
@@ -117,7 +117,7 @@ screen_y = y * 16 * depth_ratio  -  z * 16
 | # | คำถาม | กระทบอะไร |
 |---|---|---|
 | ~~1~~ | ~~โปรเจกชัน~~ → **ตัดสินใจแล้ว: oblique 3/4** | — |
-| 2 | **ตาราง canonical scale ข้างบนโอเคไหม?** ← เหลือข้อนี้บล็อก Phase W | collision/interaction ของทุก entity |
+| ~~2~~ | ~~ตาราง canonical scale~~ → **ยืนยันแล้ว: 32 px/wu** ค่าอื่นในตารางยังแก้ได้ระหว่างทาง | — |
 | 3 | มีระบบต่อสู้/ถ้ำ/ตกปลาไหม? | `ToolType` มี `AXE` `PICKAXE` `FISHING_ROD` รออยู่แล้ว |
 | 4 | ระบบความสัมพันธ์ลึกแค่ไหน — แค่เป็นเพื่อน หรือมีแต่งงาน? | `max_hearts` มีแล้วแต่ยังไม่มีกลไก |
 | 5 | เป้าหมายของเกมคืออะไร มีตอนจบไหม? | quest system, progression |
@@ -131,5 +131,6 @@ screen_y = y * 16 * depth_ratio  -  z * 16
 - โปรเจกชัน **oblique 3/4 view** ไม่ใช่ isometric
 - ฟอนต์: default ของ Godot 4.7 ใช้ได้ รองรับไทยถูกต้อง ไม่ต้องหาฟอนต์ใหม่
 - UI: base viewport 640×360 + `resources/themes/main_theme.tres` font size 10
+- Canonical scale: **32 px/wu บนพื้น · 32 px/wu ความสูง · depth ratio 0.5** — อยู่ใน `GameConstants` และใช้ผ่าน `WorldSpace` เท่านั้น
 - Engine **Godot 4.7.2**, GDScript
 - ขนาดใน gameplay มาจาก **Resource** ไม่ใช่ sprite และไม่ใช่ตัวเลขใน `.tscn`
