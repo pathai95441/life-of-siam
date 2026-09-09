@@ -47,10 +47,10 @@ func _pick_best() -> Interactable:
 		if candidate == null or not candidate.can_interact(_actor):
 			continue
 		var distance := global_position.distance_squared_to(candidate.global_position)
-		if candidate.priority > best_priority \
-			or (candidate.priority == best_priority and distance < best_distance):
+		if candidate.focus_priority > best_priority \
+			or (candidate.focus_priority == best_priority and distance < best_distance):
 			best = candidate
-			best_priority = candidate.priority
+			best_priority = candidate.focus_priority
 			best_distance = distance
 	return best
 

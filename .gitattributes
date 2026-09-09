@@ -4,6 +4,7 @@
 *.tres    text eol=lf
 *.godot   text eol=lf
 *.cfg     text eol=lf
+*.uid     text eol=lf
 *.import  text eol=lf
 
 # Binary assets — never diff or merge

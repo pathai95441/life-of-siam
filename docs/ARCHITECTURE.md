@@ -155,7 +155,7 @@ GDScript แก้ cycle แบบนี้ได้ไม่แน่นอน 
 
 | # | หนี้ | ที่ | ผลถ้าไม่แก้ | แก้อย่างไร |
 |---|---|---|---|---|
-| 1 | **ยังไม่ได้เปิดใน Godot editor เลย** | ทั้งโปรเจกต์ | `.tscn`/`.tres` ที่เขียนมือมีโอกาสผิด format และ error จะโผล่ตอนเปิดครั้งแรก | เปิด, อ่าน Output panel, แก้ตามรายการ First-open checklist ข้างล่าง |
+| 1 | ~~ยังไม่ได้เปิดใน Godot editor~~ **แก้แล้ว** | — | — | compile ผ่านบน Godot 4.7.2, boot สะอาดทั้ง main_menu และ world, smoke test 50/50 ผ่าน |
 | 2 | **ไม่มี art asset** — วาดด้วย `_draw()` และ ColorRect | `farm_grid.gd`, props | เห็นภาพระบบได้แต่ขายไม่ได้ | ใส่ TileSet + sprite แทน `_draw()` (แยก model/view ไว้แล้ว) |
 | 3 | **ไม่มี animation** ผู้เล่น | `player.gd` | ขยับแล้วไม่มีชีวิต, `swing_time` เป็นค่าคงที่แทนความยาว animation | เพิ่ม `AnimatedSprite2D` + ผูก `facing` และ FSM |
 | 4 | **`FarmGrid` มีตัวเดียวต่อ save id** | `farm_grid.gd` `SAVE_ID` | ถ้ามี 2 แผนที่ที่ปลูกได้ save id จะชนกัน | ทำ save id ให้รวมชื่อแผนที่ |
@@ -188,7 +188,7 @@ GDScript แก้ cycle แบบนี้ได้ไม่แน่นอน 
 9. **Controller / rebind** — input map มี deadzone รอไว้ แต่ยังไม่มีปุ่ม gamepad
 
 **จำเป็นสำหรับสุขภาพโปรเจกต์ระยะยาว**
-10. **ชุดทดสอบ** — `tests/` ว่างเปล่า ทั้ง `FarmGrid` daily tick, `Inventory.add_item` overflow และ save round-trip เป็น logic ล้วน ทดสอบได้ทันที (แนะนำ GdUnit4)
+10. **ชุดทดสอบที่โตได้** — มี `tests/smoke_test.tscn` (50 ข้อ, headless, exit code ใช้เป็น CI gate ได้) แต่เป็น harness เขียนเองไม่ใช่ framework ยังขาด per-test isolation, fixture และ report — ย้ายไป GdUnit4 เมื่อชุดเทสต์โต
 11. **CI + export preset** — ยังไม่มี `export_presets.cfg` (gitignore ไว้)
 12. **git** — โฟลเดอร์นี้ยังไม่เป็น git repo เลย
 
@@ -200,29 +200,43 @@ GDScript แก้ cycle แบบนี้ได้ไม่แน่นอน 
 
 | ระดับ | ความเสี่ยง | ทำไมน่ากลัว | ลดความเสี่ยงอย่างไร |
 |---|---|---|---|
-| 🔴 **สูง** | **โค้ดยังไม่เคยถูก compile** | ไม่มี Godot ในเครื่องนี้ ทุกอย่างเขียนจากความรู้ syntax GDScript 4.4 `.tscn`/`.tres` ที่เขียนมือคือจุดเสี่ยงที่สุด (`Array[DialogueLine](...)`, `unique_name_in_owner`, node-type export ที่ serialize เป็น NodePath) | เปิดใน editor แล้วไล่แก้ตาม checklist ข้างล่าง **ก่อนเขียนโค้ดเพิ่มแม้บรรทัดเดียว** |
-| 🔴 **สูง** | **ยังไม่มี version control** | งาน refactor ที่จะตามมาย้อนกลับไม่ได้ | `git init` + commit โครงนี้เป็น commit แรก ก่อนแก้อะไร |
+| ✅ | ~~โค้ดยังไม่เคยถูก compile~~ | ปิดแล้ว: Godot 4.7.2 ติดตั้งแล้ว compile ผ่าน boot สะอาด smoke test 50/50 | — |
+| ✅ | ~~ยังไม่มี version control~~ | ปิดแล้ว: git repo + initial commit | remote คือ `git@github.com:pathai95441/life-of-siam.git` |
+| 🟠 **กลาง** | **ทดสอบเฉพาะ headless** | smoke test ครอบ logic ล้วน แต่ยังไม่มีใครเห็นเกมรันบนจอจริง — input, กล้อง, y-sort, การจัดวาง UI ยังไม่ถูกยืนยันด้วยตา | เปิด editor กด F5 เล่นให้ครบลูป |
 | 🟠 **กลาง** | **save format v1 ยังไม่นิ่ง** | ถ้าปล่อยให้คนเล่นก่อนที่ schema จะนิ่ง จะติดหนี้ migration ตลอดไป | ยังอย่าให้ใครเล่นจริงจนกว่า inventory/farm schema จะนิ่ง `_migrate()` รอไว้แล้ว |
 | 🟠 **กลาง** | **สถาปัตยกรรมนี้ใหญ่กว่าที่โปรเจกต์ต้องการวันนี้** | 10 autoload กับ FSM สำหรับเกมที่มี 1 แผนที่ = over-engineering ถ้าเป้าคือ prototype เล็ก | ถ้าเป้าคือเกมยาว โครงนี้คุ้ม ถ้าเป้าคือทดลอง idea 2 สัปดาห์ ควรบอกผมให้ตัดทิ้งครึ่งหนึ่ง |
 | 🟠 **กลาง** | **ฟอนต์ไทยใน default theme** | สระลอย/วรรณยุกต์ซ้อนผิดตำแหน่ง เห็นชัดทันทีที่เปิด และแก้ทีหลังเจ็บกว่า | ใส่ฟอนต์ไทย (เช่น Noto Sans Thai) + theme กลางตั้งแต่ต้น |
 | 🟡 **ต่ำ** | **`gl_compatibility` renderer** | เลือกเพื่อรองรับเครื่องเก่า/เว็บ แต่ตัด feature 2D บางอย่างของ Forward+ (เช่น 2D shadow บางแบบ) | ประเมินอีกครั้งเมื่อรู้แน่ว่าจะลง platform ไหน แก้ที่ `project.godot` บรรทัดเดียว |
 | 🟡 **ต่ำ** | **`_draw()` debug จะติดค้าง** | โค้ดชั่วคราวที่ "ใช้ได้" มักอยู่ยาว | ลบทิ้งพร้อมกับที่ใส่ TileSet ไม่ใช่ทีหลัง |
 
-### First-open checklist
+### ผลการ compile ครั้งแรก (Godot 4.7.2)
 
-เปิด Godot ครั้งแรกแล้วคาดว่าอาจเจอ (เรียงตามโอกาสเจอ):
+พบ error จริง **1 ตัว** จากทั้งโปรเจกต์:
 
-1. **UID warnings** — ไฟล์ที่เขียนมือไม่มี `uid://` Godot จะเตือนแล้วสร้างให้เอง
-   → เปิดทุกฉากแล้ว `Ctrl+S` ทับ เพื่อให้ Godot เขียน uid ลงไป
-2. **`icon.svg` import** — Godot ต้อง import svg ก่อน `player.tscn` จะอ้างถึงได้
-   → ถ้า Sprite2D ว่าง ให้ลากไฟล์ใส่ใหม่
-3. **typed array ใน `.tres`** — `Array[DialogueLine]([...])` และ `Array[int]([...])`
-   → ถ้า error ให้เปิดไฟล์ `.tres` ใน Inspector แล้วใส่ค่าใหม่ แล้ว save
-4. **node-type export** — `npc_data`, `sprite_node`, `world_music` ควรผูกมาแล้ว
-   → เช็คใน Inspector ว่าไม่ว่าง
-5. **`%UniqueName` ที่หลุด** — ถ้า `_ready` ตายเพราะหา node ไม่เจอ ให้เช็คว่า node นั้นมี `unique_name_in_owner` จริง
-6. **`Database` output** — ถ้าเปิดเกมแล้ว console ไม่ขึ้น
-   `[Database] 7 items, 2 crops, 1 npcs, 1 dialogues` แปลว่า `.tres` โหลดไม่ผ่าน
+```
+Parse Error: Member "priority" redefined (original in native class 'Area2D')
+  at res://src/components/interactable.gd:13
+```
+
+`Area2D` มี property `priority` ของตัวเองอยู่แล้ว (ลำดับการประมวลผล area) การ
+`@export var priority` จึงเป็นการ shadow ซึ่ง GDScript ไม่ยอม — error ตัวเดียวนี้
+ลามไปทำให้ 8 สคริปต์ที่พึ่ง `Interactable` compile ไม่ผ่านตามกันหมด
+แก้โดยเปลี่ยนชื่อเป็น `focus_priority` (แก้ 4 ไฟล์: `interactable.gd`,
+`interaction_probe.gd`, `bed.gd`, `bed.tscn`)
+
+**บทเรียน:** ก่อน `@export` ชื่อสั้น ๆ บนคลาส engine ให้เช็คก่อนว่าชนกับ property
+ดั้งเดิมไหม ชื่อเสี่ยงอื่น ๆ ที่ควรระวัง: `position`, `scale`, `visible`, `mode`,
+`offset`, `size`, `speed`, `disabled`, `monitoring`
+
+สิ่งที่ **ไม่** พบปัญหา แม้เขียนมือทั้งหมด:
+- typed array ใน `.tres` — `Array[DialogueLine]([...])`, `Array[int]([...])` โหลดผ่าน
+- `unique_name_in_owner` ทุกฉาก
+- node-type export ที่ serialize เป็น NodePath (`npc_data`, `sprite_node`)
+- `res://` ทั้ง 62 จุด
+- `[Database] 7 items, 2 crops, 1 npcs, 1 dialogues` ตรงตามที่ควรเป็น
+
+Godot 4.7 สร้างไฟล์ `.uid` ให้ทุกสคริปต์ตอน import — **ต้อง commit ไปด้วย**
+เพราะเป็น identity ที่ Godot ใช้อ้างอิงสคริปต์ข้ามการเปลี่ยนชื่อไฟล์
 
 ---
 
@@ -231,12 +245,14 @@ GDScript แก้ cycle แบบนี้ได้ไม่แน่นอน 
 ทำตามลำดับ แต่ละขั้นจบแล้ว "ยังเล่นได้" — ไม่มีขั้นไหนทำให้โปรเจกต์พังค้าง
 
 ### เฟส 0 — ทำให้มันรันจริง (ก่อนอย่างอื่นทั้งหมด)
-1. `git init` + commit โครงนี้
-2. ติดตั้ง Godot 4.4 → import → ไล่แก้ error ตาม First-open checklist
-3. เล่นให้ครบ loop: พลิกดิน → ปลูก → รดน้ำ → นอน → เก็บเกี่ยว → เซฟ → โหลด
-4. commit "โครงที่รันได้จริง" — จุดนี้คือฐานที่ปลอดภัย
+1. ~~`git init` + commit โครงนี้~~ ✅
+2. ~~ติดตั้ง Godot + ไล่แก้ compile error~~ ✅ (4.7.2, พบและแก้ error 1 ตัว)
+3. ~~ยืนยัน core loop ด้วย headless test~~ ✅ (`tests/smoke_test.tscn`, 50/50)
+4. **เหลืออยู่:** เปิด editor กด F5 เล่นด้วยมือให้ครบลูป — ยืนยันสิ่งที่ headless
+   ทดสอบไม่ได้: input, กล้องตาม, y-sort, การจัดวาง UI, ฟอนต์ไทย
+5. **เหลืออยู่:** push ขึ้น GitHub remote
 
-**ยังไม่ต้องเขียน feature ใหม่จนกว่าข้อ 3 จะผ่าน**
+**ยังไม่ต้องเขียน feature ใหม่จนกว่าข้อ 4 จะผ่าน**
 
 ### เฟส 1 — ปิดหนี้ที่แพงที่สุดก่อนมันแพงขึ้น
 5. Theme กลาง + ฟอนต์ไทย (หนี้ #7 — แก้ทีหลังเจ็บกว่ามาก)

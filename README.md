@@ -1,19 +1,27 @@
 # Siam Life
 
-เกม 2D top-down life simulation ในบรรยากาศไทย สร้างด้วย **Godot 4.4** (GDScript)
+เกม 2D top-down life simulation ในบรรยากาศไทย สร้างด้วย **Godot 4.7.2** (GDScript)
 
 ---
 
 ## เปิดโปรเจกต์
 
-1. ติดตั้ง Godot 4.4 stable — https://godotengine.org/download/macos/
+1. ติดตั้ง Godot 4.7.2 — `brew install --cask godot` หรือ https://godotengine.org/download/macos/
 2. เปิด Godot → **Import** → เลือกไฟล์ `project.godot` ในโฟลเดอร์นี้
-3. ครั้งแรกที่เปิด Godot จะสร้าง `.godot/` และ import assets เอง (ถูก gitignore ไว้)
+3. ครั้งแรกที่เปิด Godot จะสร้าง `.godot/` เอง (ถูก gitignore ไว้)
 4. กด **F5** เพื่อรัน — จะเข้าหน้า Main Menu
 
-> โปรเจกต์นี้เขียนขึ้นโดยยังไม่ได้เปิดใน Godot editor
-> รอบแรกที่เปิดให้ดู **Output/Debugger panel** และแก้ error ที่เจอก่อนเล่น
-> ดูรายการที่ต้องตรวจใน [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) หัวข้อ "First-open checklist"
+โปรเจกต์นี้ compile ผ่านและบูตสะอาดบน Godot 4.7.2 แล้ว (ไม่มี error, ไม่มี warning)
+
+## รันเทสต์
+
+```bash
+godot --headless --path . tests/smoke_test.tscn
+```
+
+ครอบ core loop 50 ข้อ: นาฬิกา/ฤดู, กระเป๋าล้น, พลิกดิน-ปลูก-รดน้ำ-โต-เหี่ยว-เก็บเกี่ยว,
+save round trip ผ่าน JSON จริง, การกันปลูกผิดฤดู, บทสนทนา, และเศรษฐกิจ
+exit code ไม่ใช่ 0 เมื่อมีข้อตก — ใช้เป็น CI gate ได้ทันที
 
 ## ปุ่มควบคุม
 

@@ -12,7 +12,7 @@ func _ready() -> void:
 	super()
 	prompt = "นอน"
 	prompt_en = "Sleep"
-	priority = 10  # A bed should win over anything decorative next to it.
+	focus_priority = 10  # A bed should win over anything decorative next to it.
 
 
 func interact(actor: Node) -> void:

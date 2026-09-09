@@ -10,7 +10,9 @@ extends Area2D
 @export var prompt: String = "คุย"
 @export var prompt_en: String = "Talk"
 ## Higher wins when several interactables overlap the probe at the same time.
-@export var priority: int = 0
+## Named focus_priority, not priority: Area2D already defines a native
+## `priority` property (area processing order) and shadowing it is a parse error.
+@export var focus_priority: int = 0
 @export var enabled: bool = true
 ## Interactables that should not respond while the clock is stopped (cutscene,
 ## dialogue) can opt out here.
