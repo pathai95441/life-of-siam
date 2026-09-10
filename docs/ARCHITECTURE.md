@@ -10,14 +10,19 @@
 แบ่ง 4 ชั้น กฎคือ **ชั้นล่างไม่รู้จักชั้นบน**
 
 ```
-ชั้นที่ 4  VIEW        HUD, DialogueBox, InventoryPanel, Menus
+ชั้นที่ 5  VIEW        HUD, DialogueBox, InventoryPanel, Menus
                        อ่านสถานะ + ฟัง EventBus เท่านั้น ห้ามเขียนสถานะเกม
                                     ▲ (signal)
-ชั้นที่ 3  ENTITY      Player (FSM), Npc, Bed, SignPost
-                       ตัวตนในฉาก ประกอบจาก component
+ชั้นที่ 4  ENTITY      Player (FSM), Npc, Bed, SignPost
+                       ตัวตนในฉาก ประกอบจาก component · ไม่ถือขนาดเอง
                                     ▲
-ชั้นที่ 2  SYSTEM      FarmGrid, InteractionProbe, ToolHandler, StateMachine
+ชั้นที่ 3  SYSTEM      FarmGrid, InteractionProbe, ToolHandler, StateMachine
                        ตรรกะเกมที่จับต้องฉากได้
+                                    ▲
+ชั้นที่ 2  SPATIAL     WorldSpace (static, โปรเจกชัน oblique 3/4)
+                       WorldObjectData (Resource: footprint/height/origin)
+                       WorldBody, PlaceholderVisual (component)
+                       แหล่งความจริงเดียวเรื่อง "ขนาด" และ "พื้นที่"
                                     ▲
 ชั้นที่ 1  GLOBAL      autoload 10 ตัว — สถานะที่ต้องอยู่ข้ามฉาก
                        EventBus, SettingsManager, Database, AudioManager,
@@ -26,6 +31,14 @@
 ```
 
 ### หลักการที่ใช้ตัดสินใจ
+
+**ขนาดมาจาก Resource ไม่ใช่จาก sprite และไม่ใช่จาก `.tscn`**
+`WorldObjectData` เป็นเจ้าของ footprint/height/origin · `WorldSpace` เป็นที่เดียว
+ที่แปลง world↔screen · `WorldBody` สร้าง collision/interaction shape ตอน runtime
+ไม่มี `.tscn` ไหนใน `src/entities/` ถือ shape อีกแล้ว (ยืนยันด้วย grep ใน DoD)
+
+แยก 4 ขอบเขตชัดเจน: **logical footprint** (กฎเกมใช้อันนี้) · **collision** ·
+**interaction** · **visual** (เป็นของ sprite ห้ามย้อนกลับมาป้อนกฎ)
 
 **Model แยกจาก View เด็ดขาด**
 `FarmGrid` เก็บสถานะดินทุกช่องใน `Dictionary[Vector2i, SoilCell]` แล้ววาดด้วย
@@ -96,6 +109,11 @@ Database ◄──── ItemData, CropData, NpcData, DialogueData
 SaveManager ──► get_tree() groups เท่านั้น  (ไม่รู้จัก GameClock/GameState โดยตรง)
    ▲
    └── SceneLoader ──► GameState, GameClock, DialogueSystem
+
+WorldSpace ◄──── (ทุกอย่างที่เกี่ยวกับพื้นที่)   static ล้วน ไม่พึ่งใคร
+   ▲
+   └── WorldObjectData ──► WorldBody ──► entity ทุกตัว
+                       └─► PlaceholderVisual (ชั่วคราว ลบพร้อมงานศิลป์จริง)
 
 Player ──► InteractionProbe, ToolHandler, StateMachine, FarmGrid, GameState
 ToolHandler ──► Inventory, FarmGrid, GameState   (ไม่ type-ref Player — ดูข้างล่าง)

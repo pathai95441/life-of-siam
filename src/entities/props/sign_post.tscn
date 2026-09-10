@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/entities/props/sign_post.gd" id="1_sign"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
-size = Vector2(22, 22)
+[ext_resource type="Script" path="res://src/components/world_body.gd" id="2_body"]
+[ext_resource type="Script" path="res://src/components/placeholder_visual.gd" id="3_vis"]
+[ext_resource type="Resource" path="res://resources/world_objects/wo_sign_post.tres" id="4_data"]
 
 [node name="SignPost" type="Area2D"]
 script = ExtResource("1_sign")
@@ -13,12 +13,15 @@ inline_text = "ยินดีต้อนรับสู่ไร่สยา�
 กด E เพื่อคุย · คลิกซ้ายเพื่อใช้เครื่องมือ · I เปิดกระเป๋า · ESC หยุดเกม"
 
 [node name="Visual" type="ColorRect" parent="."]
-offset_left = -5.0
-offset_top = -12.0
-offset_right = 5.0
-offset_bottom = 4.0
 color = Color(0.62, 0.45, 0.25, 1)
 mouse_filter = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_zone")
+[node name="WorldBody" type="Node" parent="." node_paths=PackedStringArray("interaction_area")]
+script = ExtResource("2_body")
+data = ExtResource("4_data")
+interaction_area = NodePath("..")
+
+[node name="PlaceholderVisual" type="Node" parent="." node_paths=PackedStringArray("world_body", "target")]
+script = ExtResource("3_vis")
+world_body = NodePath("../WorldBody")
+target = NodePath("../Visual")

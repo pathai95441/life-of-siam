@@ -31,6 +31,7 @@ func _ready() -> void:
 	_test_camera_limits(world)
 	_test_hud_hotbar()
 	_test_player_world_body()
+	_test_entities_are_data_driven()
 	await _test_interaction_reach_band()
 
 	print("\n==================================================")
@@ -89,6 +90,12 @@ func _test_player_world_body() -> void:
 	check("it is wired to wo_player.tres", body.data != null and body.data.id == &"player")
 	check("it is wired to the player body itself", body.collision_body == player)
 
+	_check_player_collider(player, body)
+	_check_player_probe(player)
+	_check_player_sprite_scale(player, body)
+
+
+func _check_player_collider(player: Player, body: WorldBody) -> void:
 	var shape_node := body.collision_shape()
 	check("a collider was built at runtime", shape_node != null)
 	if shape_node == null:
@@ -102,6 +109,8 @@ func _test_player_world_body() -> void:
 	check("the player still collides with the world layer",
 		player.collision_mask & GameConstants.layer_mask(GameConstants.Layer.WORLD) != 0)
 
+
+func _check_player_probe(player: Player) -> void:
 	var probe_shape := player.probe.get_node_or_null(
 		InteractionProbe.SENSOR_SHAPE_NAME) as CollisionShape2D
 	check("the probe built its own sensor", probe_shape != null)
@@ -112,14 +121,79 @@ func _test_player_world_body() -> void:
 	check("the probe sits in front of the player, not on top of it",
 		not player.probe.position.is_zero_approx())
 
-	# Rule 18: the placeholder art must match the size the data declares,
-	# or the screen lies about how big things are.
+
+## Rule 18: the placeholder art must match the size the data declares, or the
+## screen lies about how big things are.
+func _check_player_sprite_scale(player: Player, body: WorldBody) -> void:
 	var sprite_height: float = player.sprite.texture.get_height() * player.sprite.scale.y
 	var declared_height := body.data.height * WorldSpace.height_px()
 	check("sprite height matches the declared height (%.1f px)" % declared_height,
 		is_equal_approx(sprite_height, declared_height))
 	check("sprite stands on the ground position, not through it",
 		player.sprite.position.y < 0.0)
+
+
+## W5: every interactable in the world must get its extents from a resource,
+## with every node reference actually resolved. A NodePath written without
+## node_paths= in the scene leaves the property null and silent, which is how
+## npc.tscn shipped a dead sprite_node for two tasks.
+func _test_entities_are_data_driven() -> void:
+	print("\n--- entities are data driven (W5) ---")
+	var expected := {&"Somchai": &"npc_adult", &"Bed": &"bed", &"SignPost": &"sign_post"}
+	for target in get_tree().get_nodes_in_group(&"interactable"):
+		var interactable := target as Interactable
+		if interactable != null:
+			_check_entity(interactable, expected)
+
+	var npc := get_tree().get_first_node_in_group(&"npc") as Npc
+	check("npc sprite_node resolved (the node_paths bug)",
+		npc != null and npc.sprite_node != null)
+
+
+func _check_entity(interactable: Interactable, expected: Dictionary) -> void:
+	var label := interactable.owner_label()
+	var body := interactable.get_node_or_null("WorldBody") as WorldBody
+	check("'%s' has a WorldBody" % label, body != null)
+	if body == null or body.data == null:
+		check("'%s' has data" % label, false)
+		return
+	check("'%s' has data" % label, true)
+	if expected.has(StringName(label)):
+		check_eq("'%s' uses the right resource" % label,
+			body.data.id, expected[StringName(label)])
+
+	_check_entity_interaction(label, body)
+	_check_entity_blocking(label, body)
+	_check_entity_visual(label, interactable)
+
+
+func _check_entity_interaction(label: String, body: WorldBody) -> void:
+	check("'%s' interaction_area resolved (not a null NodePath)" % label,
+		body.interaction_area != null)
+	var shape_node := body.interaction_shape()
+	check("'%s' interaction shape was built" % label, shape_node != null)
+	if shape_node != null:
+		check_eq("'%s' interaction size comes from data" % label,
+			(shape_node.shape as RectangleShape2D).size,
+			body.data.interaction_screen_size())
+
+
+## blocks_movement must match whether anything solid actually exists.
+func _check_entity_blocking(label: String, body: WorldBody) -> void:
+	if body.data.blocks_movement:
+		check("'%s' declares blocking and has a collider" % label,
+			body.collision_body != null and body.collision_shape() != null)
+	else:
+		check("'%s' declares no blocking and has no collider" % label,
+			body.collision_shape() == null)
+
+
+func _check_entity_visual(label: String, interactable: Interactable) -> void:
+	var visual := interactable.get_node_or_null("PlaceholderVisual") as PlaceholderVisual
+	check("'%s' has a PlaceholderVisual" % label, visual != null)
+	if visual != null:
+		check("'%s' visual wiring resolved" % label,
+			visual.world_body != null and visual.target != null)
 
 
 ## W4 moved the probe from a hand-picked 12 px to 1 world unit (32 px), while

@@ -1,32 +1,32 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/entities/npc/npc.gd" id="1_npc"]
 [ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
+[ext_resource type="Script" path="res://src/components/world_body.gd" id="3_body"]
+[ext_resource type="Script" path="res://src/components/placeholder_visual.gd" id="4_vis"]
+[ext_resource type="Resource" path="res://resources/world_objects/wo_npc_adult.tres" id="5_data"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_talk"]
-size = Vector2(20, 20)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
-size = Vector2(12, 8)
-
-[node name="Npc" type="Area2D"]
+[node name="Npc" type="Area2D" node_paths=PackedStringArray("sprite_node")]
 script = ExtResource("1_npc")
 prompt = "คุย"
 prompt_en = "Talk"
 sprite_node = NodePath("Sprite2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -7)
-scale = Vector2(0.1, 0.1)
 texture = ExtResource("2_icon")
 modulate = Color(0.7, 0.85, 1, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_talk")
 
 [node name="Body" type="StaticBody2D" parent="."]
 collision_layer = 4
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
-shape = SubResource("RectangleShape2D_body")
+[node name="WorldBody" type="Node" parent="." node_paths=PackedStringArray("collision_body", "interaction_area")]
+script = ExtResource("3_body")
+data = ExtResource("5_data")
+collision_body = NodePath("../Body")
+interaction_area = NodePath("..")
+
+[node name="PlaceholderVisual" type="Node" parent="." node_paths=PackedStringArray("world_body", "target")]
+script = ExtResource("4_vis")
+world_body = NodePath("../WorldBody")
+target = NodePath("../Sprite2D")

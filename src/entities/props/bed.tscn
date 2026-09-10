@@ -1,12 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/entities/props/bed.gd" id="1_bed"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
-size = Vector2(32, 28)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_solid"]
-size = Vector2(24, 16)
+[ext_resource type="Script" path="res://src/components/world_body.gd" id="2_body"]
+[ext_resource type="Script" path="res://src/components/placeholder_visual.gd" id="3_vis"]
+[ext_resource type="Resource" path="res://resources/world_objects/wo_bed.tres" id="4_data"]
 
 [node name="Bed" type="Area2D"]
 script = ExtResource("1_bed")
@@ -15,19 +12,20 @@ prompt_en = "Sleep"
 focus_priority = 10
 
 [node name="Visual" type="ColorRect" parent="."]
-offset_left = -12.0
-offset_top = -10.0
-offset_right = 12.0
-offset_bottom = 10.0
 color = Color(0.72, 0.35, 0.35, 1)
 mouse_filter = 2
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_zone")
 
 [node name="Body" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
-shape = SubResource("RectangleShape2D_solid")
+[node name="WorldBody" type="Node" parent="." node_paths=PackedStringArray("collision_body", "interaction_area")]
+script = ExtResource("2_body")
+data = ExtResource("4_data")
+collision_body = NodePath("../Body")
+interaction_area = NodePath("..")
+
+[node name="PlaceholderVisual" type="Node" parent="." node_paths=PackedStringArray("world_body", "target")]
+script = ExtResource("3_vis")
+world_body = NodePath("../WorldBody")
+target = NodePath("../Visual")

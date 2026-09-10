@@ -9,7 +9,7 @@
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
-| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1 ✅ W2 ✅ W3 ✅ W4 ✅ |
+| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1–W5 ✅ เหลือ W6 W7 W8 |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -68,7 +68,7 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **194 assertion ผ่านทั้งหมด** (`world_space` 35 · `world_object_data` 57 · `world_body` 20 · `smoke` 50 · `world` 32)
+ชุดเทสต์ปัจจุบัน **222 assertion ผ่านทั้งหมด** (`world_space` 35 · `world_object_data` 57 · `world_body` 20 · `smoke` 50 · `world` 60)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
@@ -76,7 +76,7 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 | ~~**W2**~~ ✅ | `data/world_object_data.gd` — Resource: footprint, height, origin, blocks_movement, interaction_reach + `.tres` 4 ตัว | **เสร็จ: `tests/world_object_data_test.tscn` 57/57** |
 | ~~**W3**~~ ✅ | `components/world_body.gd` — สร้าง collision + interaction shape จาก data ตอน `_ready` | **เสร็จ: `tests/world_body_test.tscn` 20/20** |
 | ~~**W4**~~ ✅ | ย้าย `Player` มาใช้ `world_body` ลบ shape ที่ hardcode | **เสร็จ: `world_test` 13→32 · probe reach band วัดได้ · sprite derive จาก data** |
-| **W5** | ย้าย `Npc` / `Bed` / `SignPost` มาใช้ `world_body` | ยัง interact ได้ทุกตัว, ไม่มี magic number เหลือใน entity `.tscn` |
+| ~~**W5**~~ ✅ | ย้าย `Npc` / `Bed` / `SignPost` มาใช้ `world_body` | **เสร็จ: `world_test` 32→60 · DoD ข้อ 1 ปิด · reach band กว้างขึ้นวัดได้** |
 | **W6** | `FarmGrid` เรียก `WorldSpace` แทนการหาร `TILE_SIZE` เอง | cell math ให้ผลเดิมเป๊ะ (regression) + รองรับ depth ratio |
 | **W7** | depth sorting ด้วย world y ใน `world.tscn` | เทสต์ฉากเล็ก: วางวัตถุ 3 ชิ้นต่างระยะ ยืนยันลำดับการวาด |
 | **W8** | ซอย `smoke_test.gd` (125 บรรทัด → หลายไฟล์) ตามกฎ ≤40 บรรทัด/ฟังก์ชัน | เทสต์ทั้งหมดยังผ่าน จำนวน assertion ไม่ลด |
@@ -137,7 +137,8 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 | D7 | ~~hotbar ถูกตัดขอบล่างจอ~~ | — | ✅ เฟส V — cell แสดงเลขปุ่ม+จำนวน ชื่อเต็มอยู่เหนือ hotbar |
 | D8 | ~~กล้องไม่มี limit~~ | — | ✅ เฟส V — `World.bounds` → `Player.set_camera_limits()` + ขยายโลกเป็น 960×720 |
 | D13 | **movement/targeting ยังไม่ project** — เดินแนวตั้งเร็วกว่าแนวนอน 2 เท่าใน world unit เพราะ `depth_ratio 0.5` แต่ velocity ยังคิดเป็น pixel เท่ากันทั้งสองแกน | 2.5D | **W6** (ต้องลงพร้อม `FarmGrid` ไม่แยก) |
-| D12 | **ขนาดที่ data สั่งต่างจากที่ฉากจิ้มไว้มาก** — เตียง collision 24×16 → **64×24**, interaction 32×28 → **128×56** ต้องดูด้วยตาตอน W5 ว่าเล่นได้จริง | — | W5 |
+| D12 | ~~ขนาดที่ data สั่งต่างจากที่ฉากจิ้มไว้มาก~~ | — | ✅ W5 — ยืนยันด้วยภาพและ reach band ที่กว้างขึ้น |
+| D14 | **`sprite_node` ใน `npc.tscn` เป็น null มาสองงาน** เพราะขาด `node_paths=` — ไม่มี error ไม่มี warning | — | ✅ W5 + มีเทสต์กันไว้แล้ว |
 | D11 | **ตัด string ไทยด้วย `.left(n)` ทำให้วรรณยุกต์หลุด grapheme** — พบและแก้แล้วใน hotbar แต่เป็นกับดักที่จะเกิดซ้ำ | — | ✅ แก้ที่ต้นเหตุ (เลิกตัดชื่อ) · บันทึกเป็นข้อห้ามใน AGENTS.md |
-| D9 | ~~scale ไม่สอดคล้อง~~ | 2.5D rule 18 | ✅ W4 สำหรับผู้เล่น (sprite derive จาก `height` ใน data) · NPC/props ตาม W5 |
+| D9 | ~~scale ไม่สอดคล้อง~~ | 2.5D rule 18 | ✅ W5 ครบทุกตัว — `PlaceholderVisual` derive ขนาดจาก data ที่เดียว |
 | D10 | ~~ฟอนต์ไทยจะพัง~~ **ไม่จริง** — default font ของ Godot 4.7 เรนเดอร์ไทยถูกต้อง | — | ปิด ไม่ต้องทำ |

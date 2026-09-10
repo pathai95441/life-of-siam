@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://src/entities/player/states/player_locked.gd" id="9_locked"]
 [ext_resource type="Script" path="res://src/components/world_body.gd" id="10_body"]
 [ext_resource type="Resource" path="res://resources/world_objects/wo_player.tres" id="11_data"]
+[ext_resource type="Script" path="res://src/components/placeholder_visual.gd" id="12_vis"]
 
 [node name="Player" type="CharacterBody2D" unique_id=82792315]
 motion_mode = 1
@@ -23,6 +24,11 @@ texture = ExtResource("2_icon")
 script = ExtResource("10_body")
 data = ExtResource("11_data")
 collision_body = NodePath("..")
+
+[node name="PlaceholderVisual" type="Node" parent="." node_paths=PackedStringArray("world_body", "target")]
+script = ExtResource("12_vis")
+world_body = NodePath("../WorldBody")
+target = NodePath("../Sprite2D")
 
 [node name="InteractionProbe" type="Area2D" parent="." unique_id=769015407]
 script = ExtResource("3_probe")
