@@ -7,6 +7,7 @@ var _player: Player
 func enter(_msg: Dictionary = {}) -> void:
 	_player = actor as Player
 	_player.velocity = Vector2.ZERO
+	_player.ground_velocity = Vector2.ZERO
 
 
 func physics_update(delta: float) -> void:

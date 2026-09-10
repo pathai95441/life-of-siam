@@ -6,19 +6,21 @@ extends Node2D
 ## an empty 200x200 field costs nothing, and growth advances once per day in
 ## response to [signal EventBus.day_started] rather than per frame.
 ##
-## Rendering is currently a debug [method _draw] pass. Swapping in art means
-## replacing _draw with a TileMapLayer (soil) plus pooled Sprite2Ds (crops);
-## nothing outside this file needs to change, which is the point of keeping
-## the model separate.
+## It draws nothing. [FarmDebugView] renders the blockout view by reading this
+## node, and real art will replace that view with a TileMapLayer for soil plus
+## pooled sprites for crops. Nothing in this file changes when that happens,
+## which is the whole point of the split.
 
 const SAVE_ID := &"farm_grid"
 
+## Emitted whenever any cell changes, so a view can refresh without polling.
+signal changed()
+
 ## Tiles the player is allowed to till, as a rect in cell coordinates.
-## Must stay inside the owning level's bounds: one cell is
-## [constant GameConstants.TILE_SIZE] pixels, so 24x18 cells is 768x576 px
+## Must stay inside the owning level's bounds. One cell is one world unit,
+## which projects to 32x16 screen pixels, so 24x18 cells covers 768x288 px
 ## against the blockout map's 960x720.
 @export var arable_region := Rect2i(-12, -9, 24, 18)
-@export var debug_draw: bool = true
 
 var _cells: Dictionary[Vector2i, SoilCell] = {}
 
@@ -31,13 +33,15 @@ func _ready() -> void:
 
 # --- Coordinates -------------------------------------------------------------
 
+## Screen position -> cell, through the projection. Local first, so a farm
+## placed away from the origin still resolves correctly.
 func world_to_cell(world_position: Vector2) -> Vector2i:
-	var local := to_local(world_position)
-	return Vector2i(floori(local.x / GameConstants.TILE_SIZE), floori(local.y / GameConstants.TILE_SIZE))
+	return WorldSpace.ground_to_cell(WorldSpace.screen_to_ground(to_local(world_position)))
 
 
+## Centre of a cell, back in screen space.
 func cell_to_world(cell: Vector2i) -> Vector2:
-	return to_global(Vector2(cell * GameConstants.TILE_SIZE) + Vector2(GameConstants.TILE_SIZE, GameConstants.TILE_SIZE) * 0.5)
+	return to_global(WorldSpace.ground_to_screen(WorldSpace.cell_centre(cell)))
 
 
 func is_arable(cell: Vector2i) -> bool:
@@ -46,6 +50,14 @@ func is_arable(cell: Vector2i) -> bool:
 
 func get_cell(cell: Vector2i) -> SoilCell:
 	return _cells.get(cell) as SoilCell
+
+
+## Every cell that has ever been worked. Read-only view for renderers; the
+## dictionary itself stays private so nothing outside can mutate soil.
+func cells() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	out.assign(_cells.keys())
+	return out
 
 
 # --- Player actions ----------------------------------------------------------
@@ -63,7 +75,7 @@ func till(cell: Vector2i) -> bool:
 		_cells[cell] = soil
 	soil.tilled = true
 	EventBus.tile_tilled.emit(cell)
-	queue_redraw()
+	changed.emit()
 	return true
 
 
@@ -74,7 +86,7 @@ func water(cell: Vector2i) -> bool:
 	soil.watered = true
 	soil.dry_days = 0
 	EventBus.tile_watered.emit(cell)
-	queue_redraw()
+	changed.emit()
 	return true
 
 
@@ -91,7 +103,7 @@ func plant(cell: Vector2i, crop: CropData) -> bool:
 	soil.growth_days = 0
 	soil.withered = false
 	EventBus.crop_planted.emit(cell, crop.id)
-	queue_redraw()
+	changed.emit()
 	return true
 
 
@@ -119,7 +131,7 @@ func harvest(cell: Vector2i) -> bool:
 		soil.days_since_harvest = 0
 	else:
 		soil.clear_crop()
-	queue_redraw()
+	changed.emit()
 	return true
 
 
@@ -129,7 +141,7 @@ func clear_plant(cell: Vector2i) -> bool:
 	if soil == null or not soil.has_crop():
 		return false
 	soil.clear_crop()
-	queue_redraw()
+	changed.emit()
 	return true
 
 
@@ -142,7 +154,7 @@ func _on_day_started(_day: int, season: int, _year: int) -> void:
 			_advance_crop(cell, soil, season)
 		# Soil dries out overnight; the player waters again each morning.
 		soil.watered = false
-	queue_redraw()
+	changed.emit()
 
 
 func _advance_crop(cell: Vector2i, soil: SoilCell, season: int) -> void:
@@ -174,41 +186,6 @@ func _advance_crop(cell: Vector2i, soil: SoilCell, season: int) -> void:
 		EventBus.crop_grown.emit(cell, stage)
 
 
-# --- Debug rendering ---------------------------------------------------------
-
-func _draw() -> void:
-	if not debug_draw:
-		return
-	var size := Vector2(GameConstants.TILE_SIZE, GameConstants.TILE_SIZE)
-
-	# Field outline, so the arable area is visible during blockout.
-	draw_rect(Rect2(
-		Vector2(arable_region.position * GameConstants.TILE_SIZE),
-		Vector2(arable_region.size * GameConstants.TILE_SIZE)
-	), Color(1, 1, 1, 0.06), false, 1.0)
-
-	for cell in _cells:
-		var soil: SoilCell = _cells[cell]
-		var origin := Vector2(cell * GameConstants.TILE_SIZE)
-		if soil.tilled:
-			var soil_color := Color(0.35, 0.22, 0.12) if not soil.watered else Color(0.22, 0.15, 0.10)
-			draw_rect(Rect2(origin, size), soil_color)
-			draw_rect(Rect2(origin, size), Color(0, 0, 0, 0.25), false, 1.0)
-		if not soil.has_crop():
-			continue
-		var crop := soil.crop()
-		if crop == null:
-			continue
-		if soil.withered:
-			draw_rect(Rect2(origin + size * 0.35, size * 0.3), Color(0.45, 0.4, 0.25))
-			continue
-		# Plant height grows with its stage; gold once ripe.
-		var t := float(soil.growth_days) / maxf(1.0, float(crop.total_growth_days()))
-		var height := size.y * lerpf(0.2, 0.8, clampf(t, 0.0, 1.0))
-		var color := Color(0.95, 0.8, 0.25) if crop.is_mature(soil.growth_days) else Color(0.25, 0.7, 0.3)
-		draw_rect(Rect2(origin + Vector2(size.x * 0.35, size.y - height), Vector2(size.x * 0.3, height)), color)
-
-
 # --- Save contract -----------------------------------------------------------
 
 func get_save_id() -> StringName:
@@ -232,4 +209,4 @@ func load_state(data: Dictionary) -> void:
 			push_warning("FarmGrid: skipping malformed cell key '%s'" % key)
 			continue
 		_cells[Vector2i(int(parts[0]), int(parts[1]))] = SoilCell.from_dict(raw[key])
-	queue_redraw()
+	changed.emit()

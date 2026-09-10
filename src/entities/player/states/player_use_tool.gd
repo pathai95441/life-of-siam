@@ -13,6 +13,7 @@ var _elapsed: float = 0.0
 func enter(_msg: Dictionary = {}) -> void:
 	_player = actor as Player
 	_player.velocity = Vector2.ZERO
+	_player.ground_velocity = Vector2.ZERO
 	_elapsed = 0.0
 
 	var acted: bool = _player.tool_handler.use_selected()

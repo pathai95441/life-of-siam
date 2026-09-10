@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://src/world/world.gd" id="1_world"]
 [ext_resource type="Script" path="res://src/systems/farming/farm_grid.gd" id="2_farm"]
+[ext_resource type="Script" path="res://src/systems/farming/farm_debug_view.gd" id="12_farmview"]
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://src/entities/npc/npc.tscn" id="4_npc"]
 [ext_resource type="Resource" path="res://resources/npcs/npc_somchai.tres" id="5_somchai"]
@@ -35,7 +36,10 @@ mouse_filter = 2
 [node name="FarmGrid" type="Node2D" parent="."]
 script = ExtResource("2_farm")
 arable_region = Rect2i(-12, -9, 24, 18)
-debug_draw = true
+
+[node name="FarmDebugView" type="Node2D" parent="FarmGrid" node_paths=PackedStringArray("grid")]
+script = ExtResource("12_farmview")
+grid = NodePath("..")
 
 [node name="Bounds" type="StaticBody2D" parent="."]
 collision_layer = 1

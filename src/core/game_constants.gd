@@ -17,11 +17,9 @@ const HEIGHT_PX_PER_UNIT: int = 32
 ## 1.0 would be plain top-down; 0.5 tilts the ground plane.
 const DEPTH_RATIO: float = 0.5
 
-## Grid cell edge in pixels. Identical to [constant GROUND_PX_PER_UNIT] by
-## definition -- one cell is one world unit -- and kept under its own name
-## while grid code still measures in pixels. Task W6 removes it.
-const TILE_SIZE: int = GROUND_PX_PER_UNIT
-const TILE_SIZE_V := Vector2i(TILE_SIZE, TILE_SIZE)
+# One grid cell is one world unit. There is no separate tile-size constant:
+# code that needs pixels asks WorldSpace, so the projection can never be
+# bypassed by dividing by a number.
 
 # --- Time ---
 const MINUTES_PER_HOUR: int = 60
@@ -40,10 +38,15 @@ const SEASON_NAMES: Array[String] = ["Spring", "Summer", "Rainy", "Winter"]
 const SEASON_NAMES_TH: Array[String] = ["ฤดูใบไม้ผลิ", "ฤดูร้อน", "ฤดูฝน", "ฤดูหนาว"]
 
 # --- Player ---
-const PLAYER_WALK_SPEED: float = 70.0
-const PLAYER_RUN_SPEED: float = 120.0
-const PLAYER_ACCELERATION: float = 900.0
-const PLAYER_FRICTION: float = 1200.0
+# Movement is measured in world units per second, not pixels per second.
+# In an oblique projection a pixel is not a fixed distance -- one pixel south
+# covers twice the ground of one pixel east -- so pixel speeds would make the
+# player faster on one axis than the other. Roughly: 1 wu is a metre, so 2.2
+# is a brisk walk and 3.8 a jog.
+const PLAYER_WALK_SPEED: float = 2.2
+const PLAYER_RUN_SPEED: float = 3.8
+const PLAYER_ACCELERATION: float = 28.0
+const PLAYER_FRICTION: float = 38.0
 const PLAYER_MAX_STAMINA: float = 100.0
 ## How far in front of the player the interaction probe sits, in world units.
 const PROBE_REACH_UNITS: float = 1.0
@@ -52,6 +55,9 @@ const PROBE_REACH_UNITS: float = 1.0
 const PROBE_SIZE_UNITS := Vector2(0.5, 0.5)
 const STAMINA_PER_TOOL_USE: float = 2.0
 const STAMINA_PER_RUN_SECOND: float = 1.5
+
+## Tallest a crop's placeholder quad grows to, in world units.
+const CROP_MAX_HEIGHT_UNITS: float = 0.8
 
 # --- Economy ---
 const STARTING_MONEY: int = 500

@@ -40,14 +40,13 @@ func _build_sensor() -> void:
 
 ## Called by the actor whenever its facing changes.
 ##
-## The offset is measured on the un-foreshortened axis for now, so it stays
-## consistent with movement and with FarmGrid's square cells. Task W6 moves
-## movement, targeting and the grid into projected space together -- doing only
-## one of them here would put the prompt somewhere the tool does not reach.
+## [param facing] is a direction on the ground plane. The offset is projected,
+## so the probe lands exactly where [method Player.target_cell] points and the
+## prompt can never appear for a cell the tool cannot reach.
 func point_towards(facing: Vector2) -> void:
 	if facing.is_zero_approx():
 		return
-	position = facing.normalized() * reach_units * WorldSpace.ground_px()
+	position = WorldSpace.ground_to_screen(facing.normalized() * reach_units)
 
 
 func _physics_process(_delta: float) -> void:

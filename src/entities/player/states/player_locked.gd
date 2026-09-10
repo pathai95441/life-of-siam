@@ -17,4 +17,5 @@ func enter(msg: Dictionary = {}) -> void:
 func physics_update(_delta: float) -> void:
 	# Bleed off residual velocity so the player does not slide during dialogue.
 	_player.velocity = Vector2.ZERO
+	_player.ground_velocity = Vector2.ZERO
 	_player.move_and_slide()

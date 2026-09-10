@@ -9,14 +9,20 @@ extends CharacterBody2D
 
 const SAVE_ID := &"player"
 
+# All four are world units per second (or per second squared), never pixels.
 @export var walk_speed: float = GameConstants.PLAYER_WALK_SPEED
 @export var run_speed: float = GameConstants.PLAYER_RUN_SPEED
 @export var acceleration: float = GameConstants.PLAYER_ACCELERATION
 @export var friction: float = GameConstants.PLAYER_FRICTION
 
-## Last non-zero movement direction; drives the probe and, later, animation.
+## Last non-zero movement direction, as a direction on the ground plane.
+## Drives the probe, tool targeting and, later, animation.
 var facing: Vector2 = Vector2.DOWN
 var input_direction: Vector2 = Vector2.ZERO
+
+## Velocity on the ground plane, in world units per second. The authority;
+## [member CharacterBody2D.velocity] is only its projection into screen space.
+var ground_velocity: Vector2 = Vector2.ZERO
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var state_machine: StateMachine = $StateMachine
@@ -59,13 +65,39 @@ func current_speed() -> float:
 	return run_speed if running else walk_speed
 
 
+## Moves the player. [param target_direction] is a direction on the ground
+## plane and [param speed] is in world units per second.
+##
+## Acceleration is integrated on the ground plane and only then projected into
+## screen space, so walking north covers the same ground as walking east.
+## Doing it the other way -- the way this used to work -- made the player
+## travel twice as far per second along the foreshortened axis.
 func apply_movement(delta: float, target_direction: Vector2, speed: float) -> void:
-	if target_direction.is_zero_approx():
-		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
-	else:
-		velocity = velocity.move_toward(target_direction * speed, acceleration * delta)
+	integrate_ground_velocity(delta, target_direction, speed)
+	if not target_direction.is_zero_approx():
 		set_facing(target_direction)
+
+	velocity = WorldSpace.ground_to_screen(ground_velocity)
 	move_and_slide()
+	# move_and_slide rewrites velocity when the body slides along a wall, so
+	# read it back rather than letting the two disagree and fight each other.
+	ground_velocity = WorldSpace.screen_to_ground(velocity)
+
+
+## Advances [member ground_velocity] toward [param speed] in
+## [param target_direction], both in world units.
+##
+## Split out from [method apply_movement] so the movement model can be tested
+## without a physics frame: this is where "walking north covers the same
+## ground as walking east" is actually decided.
+func integrate_ground_velocity(delta: float, target_direction: Vector2,
+		speed: float) -> Vector2:
+	if target_direction.is_zero_approx():
+		ground_velocity = ground_velocity.move_toward(Vector2.ZERO, friction * delta)
+	else:
+		ground_velocity = ground_velocity.move_toward(
+			target_direction.normalized() * speed, acceleration * delta)
+	return ground_velocity
 
 
 func set_facing(direction: Vector2) -> void:
@@ -78,12 +110,19 @@ func set_facing(direction: Vector2) -> void:
 	probe.point_towards(facing)
 
 
-## The cell directly in front of the player — the target of every tool swing.
+## This player's position on the ground plane, in world units.
+func ground_position() -> Vector2:
+	return WorldSpace.screen_to_ground(global_position)
+
+
+## The cell directly in front of the player -- the target of every tool swing.
+## One world unit ahead, projected, so reach is the same in every direction
+## rather than twice as far along the foreshortened axis.
 func target_cell() -> Vector2i:
 	var grid := farm_grid()
 	if grid == null:
 		return Vector2i.ZERO
-	return grid.world_to_cell(global_position + facing * float(GameConstants.TILE_SIZE))
+	return grid.world_to_cell(global_position + WorldSpace.ground_to_screen(facing))
 
 
 ## The [FarmGrid] for the current map, or null on maps without one.
@@ -104,6 +143,7 @@ func set_camera_limits(bounds: Rect2) -> void:
 
 func lock(reason: StringName = &"dialogue") -> void:
 	velocity = Vector2.ZERO
+	ground_velocity = Vector2.ZERO
 	if state_machine.has_state(&"locked"):
 		state_machine.transition_to(&"locked", {"reason": reason})
 

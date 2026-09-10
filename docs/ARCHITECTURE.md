@@ -146,7 +146,7 @@ GDScript แก้ cycle แบบนี้ได้ไม่แน่นอน 
 |---|---|---|---|
 | **Time** | `game_clock.gd` | เดินเวลา, วัน, ฤดู, ปี | แหล่งความจริงเดียว ทุกอย่างที่อิงวันฟัง signal ไม่นับวันเอง `absolute_day()` เป็น key ที่ทนการข้ามฤดู/ปี |
 | **Save/Load** | `save_manager.gd` | ประสานงาน JSON + migration | 2 group, 2 เฟส มี `_migrate()` รอไว้แล้ว |
-| **Farming** | `farm_grid.gd`, `soil_cell.gd` | ดิน, น้ำ, การโต, เหี่ยว | sparse dict → ไร่ 200×200 ที่ยังไม่ขุดต้นทุน 0 โตวันละครั้งตอน `day_started` ไม่ใช่ทุกเฟรม |
+| **Farming** | `farm_grid.gd`, `soil_cell.gd`, `farm_debug_view.gd` | ดิน, น้ำ, การโต, เหี่ยว | sparse dict → ไร่ 200×200 ที่ยังไม่ขุดต้นทุน 0 โตวันละครั้งตอน `day_started` ไม่ใช่ทุกเฟรม · **model ไม่วาดอะไรเลย** `FarmDebugView` อ่านแล้ววาด เปลี่ยนไป TileMapLayer แก้ไฟล์เดียว |
 | **Inventory** | `inventory.gd`, `inventory_slot.gd` | 30 ช่อง, hotbar 5 ช่อง | `add_item()` คืน "จำนวนที่ใส่ไม่ลง" ผู้เรียกจึงตัดสินใจได้ว่าจะทิ้งหรือปฏิเสธ ไม่บีบอัดช่อง เพราะ index 0–4 คือ hotbar |
 | **Interaction** | `interactable.gd`, `interaction_probe.gd` | หา target ที่ดีที่สุดรอบตัว | วัตถุตัดสินว่า "interact แล้วเกิดอะไร" ผู้เล่นตัดสินแค่ "เมื่อไร" — เพราะ inversion นี้ NPC/เตียง/ป้ายจึงใช้ probe ตัวเดียวกัน |
 | **Dialogue** | `dialogue_system.gd` + `dialogue_box.gd` | คุยทีละบรรทัด | runner ถือ state, box เป็น view เปล่า ๆ เปลี่ยน UI ได้ไม่กระทบ logic |
