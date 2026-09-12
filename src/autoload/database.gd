@@ -11,6 +11,7 @@ var npcs: Dictionary[StringName, NpcData] = {}
 var dialogues: Dictionary[StringName, DialogueData] = {}
 var world_objects: Dictionary[StringName, WorldObjectData] = {}
 var shops: Dictionary[StringName, ShopData] = {}
+var maps: Dictionary[StringName, MapData] = {}
 
 const _DIRS := {
 	"items": "res://resources/items",
@@ -19,6 +20,7 @@ const _DIRS := {
 	"dialogue": "res://resources/dialogue",
 	"world_objects": "res://resources/world_objects",
 	"shops": "res://resources/shops",
+	"maps": "res://resources/maps",
 }
 
 
@@ -40,11 +42,22 @@ func _load_all() -> void:
 	# Shops last: their validation reads the item registry.
 	for res in _scan(_DIRS["shops"]):
 		_register(shops, res)
+	for res in _scan(_DIRS["maps"]):
+		_register(maps, res)
 	_validate_world_objects()
 	_validate_shops()
-	print("[Database] %d items, %d crops, %d npcs, %d dialogues, %d world objects, %d shops"
+	_validate_maps()
+	print("[Database] %d items, %d crops, %d npcs, %d dialogues, %d world objects, %d shops, %d maps"
 		% [items.size(), crops.size(), npcs.size(), dialogues.size(),
-			world_objects.size(), shops.size()])
+			world_objects.size(), shops.size(), maps.size()])
+
+
+## A map pointing at a scene that is not there fails at the worst moment --
+## mid-transition, with the screen already faded to black.
+func _validate_maps() -> void:
+	for id in maps:
+		for error in (maps[id] as MapData).validation_errors():
+			push_error("Database: map '%s' is invalid: %s" % [id, error])
 
 
 ## A shop stocking something unbuyable would show an item nobody can purchase,
@@ -117,6 +130,10 @@ func get_world_object(id: StringName) -> WorldObjectData:
 
 func get_shop(id: StringName) -> ShopData:
 	return shops.get(id) as ShopData
+
+
+func get_map(id: StringName) -> MapData:
+	return maps.get(id) as MapData
 
 
 func has_item(id: StringName) -> bool:

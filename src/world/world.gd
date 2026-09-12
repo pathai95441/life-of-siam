@@ -14,6 +14,10 @@ extends Node2D
 ## clock directly in their own _ready; faking a rollover to refresh a label
 ## would run FarmGrid's daily tick and silently advance every crop on load.
 
+## Which map this is, matching a MapData id. Save data for everything in this
+## scene is filed under it, so changing it orphans a player's progress here.
+@export var map_id: StringName = &""
+
 @export var world_music: AudioStream
 ## Fallback spawn used when the requested spawn point does not exist.
 @export var default_spawn: NodePath
@@ -32,6 +36,8 @@ extends Node2D
 
 func _ready() -> void:
 	add_to_group(&"world")
+	if map_id == &"":
+		push_error("World '%s' has no map_id; its contents cannot be saved" % name)
 	_place_player()
 
 	# Scene nodes are in the tree now; let parked save state land on them.

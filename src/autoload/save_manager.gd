@@ -60,7 +60,7 @@ func new_game(slot: int = 0, farm_name: String = "Siam Farm", player_name: Strin
 	GameState.player_name = player_name
 	_grant_starter_kit()
 	EventBus.new_game_started.emit()
-	SceneLoader.change_scene(GameConstants.SCENE_WORLD, &"default")
+	SceneLoader.change_to_map(GameConstants.STARTING_MAP, &"default")
 
 
 ## What the player wakes up with on day 1. Lives here because this function is

@@ -66,7 +66,7 @@ func change_scene(path: String, spawn_point: StringName = &"default") -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	if path == GameConstants.SCENE_WORLD:
+	if is_map_scene(get_tree().current_scene):
 		GameState.current_map = path
 
 	await _fade_to(0.0)
@@ -111,6 +111,32 @@ func _swap_to(scene: PackedScene) -> bool:
 func _abort_change() -> void:
 	await _fade_to(0.0)
 	_is_changing = false
+
+
+## Whether a loaded scene is somewhere the player can be saved and restored.
+##
+## Maps are remembered as [member GameState.current_map]; menus are not, or a
+## save made from the pause screen would reload into the pause screen. The test
+## is the scene's root type rather than a list of paths, so a new map is
+## remembered the moment it exists with nothing to register.
+static func is_map_scene(scene_root: Node) -> bool:
+	return scene_root is World
+
+
+## Path of the map with [param map_id], empty when there is no such map.
+func map_path(map_id: StringName) -> String:
+	var map := Database.get_map(map_id)
+	return map.scene_path if map != null else ""
+
+
+## Travels to a map by id rather than by path, so callers never spell a
+## filename and moving a scene breaks nothing.
+func change_to_map(map_id: StringName, spawn_point: StringName = &"default") -> void:
+	var path := map_path(map_id)
+	if path.is_empty():
+		push_error("SceneLoader: no map registered as '%s'" % map_id)
+		return
+	await change_scene(path, spawn_point)
 
 
 func to_main_menu() -> void:

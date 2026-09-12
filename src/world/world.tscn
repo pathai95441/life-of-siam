@@ -25,6 +25,7 @@ size = Vector2(16, 720)
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_world")
+map_id = &"farm"
 default_spawn = NodePath("SpawnPoints/Default")
 bounds = Rect2(-480, -360, 960, 720)
 

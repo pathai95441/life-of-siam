@@ -12,7 +12,7 @@
 | **W** | **World-object model (2.5D foundation)** | 🟢 **เสร็จครบ W1–W8 · DoD ผ่าน 7/7** |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🟢 **เสร็จครบ E1–E5 · DoD ผ่าน 8/8** |
-| 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | 📋 **มีแผนแล้ว — รอยืนยัน 4 ข้อ** |
+| 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | 🔵 กำลังทำ — M1 ✅ |
 | 4 | ทำให้ดูเป็นเกม (TileSet, animation, เสียง) | ⬜ รอ |
 | 5 | ปล่อยได้ (save slot UI, localisation, CI) | ⬜ รอ |
 
@@ -68,8 +68,8 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **409 assertion ผ่านทั้งหมด**
-headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 31 · `entity` 69 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `daily_summary` 12 · `economy_loop` 21 · `smoke` 50 · `world` 16
+ชุดเทสต์ปัจจุบัน **423 assertion ผ่านทั้งหมด**
+headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 31 · `entity` 69 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `daily_summary` 12 · `economy_loop` 21 · `map` 14 · `smoke` 50 · `world` 16
 windowed: `depth_sort` 5 (**ห้ามใส่ `--headless`** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
@@ -257,16 +257,16 @@ E5 ท้ายสุดเพราะแตะฉากที่ใช้ง�
 
 | # | อาการ | หลักฐาน |
 |---|---|---|
-| **P1** | **`current_map` ถูกตั้งเฉพาะแผนที่เดียว** โหลดเซฟหลังเข้าแผนที่ 2 จะเด้งกลับแผนที่ 1 | `scene_loader.gd:69` — `if path == GameConstants.SCENE_WORLD:` |
+| ~~**P1**~~ ✅ M1 | ~~`current_map` ถูกตั้งเฉพาะแผนที่เดียว~~ | แก้แล้ว: เงื่อนไขเป็น `is_map_scene()` ดูชนิดของ root ไม่ใช่รายชื่อ path |
 | **P2** | **save id ชนกันข้ามแผนที่** `FarmGrid.SAVE_ID` เป็น const ตายตัว สองแผนที่ที่มีแปลงปลูก = id เดียวกัน `SaveManager` จะ `push_error` แล้ว**ทิ้งอันหนึ่ง** | `farm_grid.gd:14` · `save_manager.gd:130` |
 | **P3** | **สถานะฉากเป็นก้อนแบนก้อนเดียว ใช้แล้วทิ้ง** — `_pending_scene_state` ถูก `clear()` หลังใช้ครั้งแรก เดินออกจากแผนที่แล้วกลับมา **ไร่หายทั้งไร่** | `save_manager.gd::_on_world_ready` |
 
 P3 คือตัวที่อันตรายที่สุดและ **ผมยังไม่เคยบันทึกไว้** — มันไม่ได้ทำให้เกมพัง
 มันทำให้ผู้เล่นเสียของเงียบ ๆ
 
-## ❓ ตัดสินใจที่ต้องการก่อนเริ่ม
+## ✅ ตัดสินใจแล้ว
 
-| # | คำถาม | ที่ผมเสนอ | ทำไม |
+| # | คำถาม | ตัดสินใจ | ทำไม |
 |---|---|---|---|
 | 1 | **แผนที่ที่ 2 คืออะไร** | บ้านผู้เล่น (interior เล็ก ๆ) | เล็กที่สุดที่พิสูจน์ระบบได้ · หมู่บ้านเป็นแผนที่ที่ 3 |
 | 2 | **เตียงย้ายเข้าบ้านไหม** | ย้าย | ทำให้ต้องเดินข้ามแผนที่ทุกวัน = ทดสอบระบบทุกวันโดยธรรมชาติ |
@@ -280,7 +280,7 @@ P3 คือตัวที่อันตรายที่สุดและ *
 | `SceneLoader` + spawn point | ✅ มีแล้ว รับ spawn point ได้ตั้งแต่แรก |
 | `SaveManager` group `saveable` + `_migrate()` | ✅ hook migration เขียนรอไว้ตั้งแต่ commit แรก — **เฟสนี้คือครั้งแรกที่ได้ใช้** |
 | `World` + `Interactable` + `WorldObjectData` | ✅ |
-| ตัดสินใจ 4 ข้อข้างบน | ⛔ **บล็อกอยู่** |
+| ตัดสินใจ 4 ข้อข้างบน | ✅ **ยืนยันแล้วทั้งหมด** |
 
 ## ARCHITECTURAL IMPACT
 
@@ -311,7 +311,7 @@ entities/npc/
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
-| **M1** | `MapData` registry + `World.map_id` + `SceneLoader` ตั้ง `current_map` ทุกครั้ง (แก้ **P1**) | เปลี่ยนไปแผนที่ไหนก็ได้ `current_map` ตามถูก · โหลดเซฟกลับแผนที่ที่จากมา |
+| ~~**M1**~~ ✅ | `MapData` registry + `World.map_id` + `SceneLoader` ตั้ง `current_map` ทุกครั้ง (แก้ **P1**) | **เสร็จ: `tests/map_test.tscn` 14/14** |
 | **M2** | `SaveManager` เติมชื่อแผนที่นำหน้า save id ของ node ในฉาก (แก้ **P2**) | สองแผนที่ที่มี `FarmGrid` ไม่ชนกัน · ไม่มี `push_error` duplicate |
 | **M3** | **สถานะฉากแยกตามแผนที่ และคงอยู่ข้ามการเปลี่ยนแผนที่** (แก้ **P3**) + migration v1→v2 | ขุดไร่ → เข้าบ้าน → ออกมา → **ไร่ยังอยู่** · เซฟ/โหลดเก็บครบทุกแผนที่ · เซฟ v1 เก่ายังโหลดได้ |
 | **M4** | `Door` Interactable + `wo_door.tres` | กด `E` แล้วย้ายแผนที่ · ไปโผล่ที่ spawn ที่ระบุ · ประตูขากลับพากลับที่เดิม |

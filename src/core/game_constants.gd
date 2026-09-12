@@ -90,3 +90,6 @@ const SETTINGS_PATH: String = "user://settings.cfg"
 # --- Scenes ---
 const SCENE_MAIN_MENU: String = "res://src/ui/menus/main_menu.tscn"
 const SCENE_WORLD: String = "res://src/world/world.tscn"
+## Map a new game begins on, by id. Paths are for the boot scene only; maps are
+## reached through [SceneLoader.change_to_map].
+const STARTING_MAP: StringName = &"farm"
