@@ -17,19 +17,34 @@ extends Node
 
 const GROUP_PROVIDER := &"save_provider"
 const GROUP_SAVEABLE := &"saveable"
+## Things that move between maps and therefore belong to no map -- the player,
+## and one day anything following them. Restored when a save is loaded, and
+## deliberately not when a door is walked through: arriving somewhere should put
+## you at the door, not where you stood last time you were here.
+const GROUP_TRAVELLER := &"traveller"
 
 ## The slot the current session reads and writes. Slot 0 is the autosave /
 ## quick-save slot; the menu picks 1..N.
 var current_slot: int = 0
 
-## Scene-node state waiting for its scene to exist.
-var _pending_scene_state: Dictionary = {}
+## Every map's scene state, for the whole session -- not just the map on
+## screen. Captured when a map is left and handed back when it is re-entered,
+## so walking out of the farm and back does not empty it.
+var _scene_state: Dictionary = {}
+
+## Traveller state waiting for a scene. Applied once, on the first map after a
+## load, then dropped so later transitions use spawn points instead.
+var _pending_traveller: Dictionary = {}
+
 var _loading: bool = false
 
 
 func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(GameConstants.SAVE_DIR)
 	EventBus.world_ready.connect(_on_world_ready)
+	# The old map is still in the tree when this fires, which is the only
+	# moment its contents can still be read.
+	EventBus.scene_change_started.connect(_on_scene_change_started)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -38,21 +53,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-# --- Paths -------------------------------------------------------------------
+# --- Slots -------------------------------------------------------------------
+# Thin pass-throughs to SaveFile. Menus and tests speak to the manager; where
+# the bytes live is its business, not theirs.
 
 static func slot_path(slot: int) -> String:
-	return "%s/slot_%d.json" % [GameConstants.SAVE_DIR, slot]
+	return SaveFile.path_for(slot)
 
 
 static func slot_exists(slot: int) -> bool:
-	return FileAccess.file_exists(slot_path(slot))
+	return SaveFile.exists(slot)
 
 
 # --- New game ----------------------------------------------------------------
 
 func new_game(slot: int = 0, farm_name: String = "Siam Farm", player_name: String = "Player") -> void:
 	current_slot = slot
-	_pending_scene_state.clear()
+	_scene_state.clear()
+	_pending_traveller.clear()
 	GameClock.reset()
 	GameState.reset()
 	Inventory.reset()
@@ -78,25 +96,18 @@ func save_to_slot(slot: int) -> bool:
 	current_slot = slot
 	EventBus.save_started.emit(slot)
 
+	# The map on screen has unsaved changes in it; fold them in before writing.
+	_capture_current_map()
 	var payload := {
 		"header": _build_header(),
 		"providers": _collect(GROUP_PROVIDER),
-		"scene": _collect_scene_state(),
+		"scene": _scene_state.duplicate(true),
+		"traveller": _collect(GROUP_TRAVELLER),
 	}
 
-	var file := FileAccess.open(slot_path(slot), FileAccess.WRITE)
-	if file == null:
-		push_error("SaveManager: cannot write slot %d (%s)"
-			% [slot, error_string(FileAccess.get_open_error())])
+	if not SaveFile.write(slot, payload):
 		EventBus.save_completed.emit(slot, false)
 		return false
-
-	file.store_string(JSON.stringify(payload, "\t"))
-	file.close()
-
-	# Keep the parked scene payload in sync so a load-without-restart is
-	# consistent with what we just wrote.
-	_pending_scene_state = payload["scene"]
 
 	EventBus.save_completed.emit(slot, true)
 	EventBus.toast_posted.emit("บันทึกเกมแล้ว")
@@ -124,18 +135,27 @@ func current_map_id() -> StringName:
 	return world.map_id if world != null else &""
 
 
-## Scene state, filed under the map it came from.
+## Files the map currently on screen into [member _scene_state].
 ##
 ## The map prefix is added here rather than by the nodes themselves: a
 ## [FarmGrid] should be a FarmGrid wherever it is placed, and making each
 ## saveable look up which map it is in would put that knowledge in every one of
 ## them. Without the prefix two maps holding soil write to the same key and one
 ## of them is dropped.
-func _collect_scene_state() -> Dictionary:
+func _capture_current_map() -> void:
+	# While restoring, the map on screen is the one being replaced. Capturing it
+	# would overwrite the freshly loaded state for that very map with whatever
+	# the abandoned session had in it.
+	if _loading:
+		return
 	var map_id := current_map_id()
 	if map_id == &"":
-		return {}
-	return {String(map_id): _collect(GROUP_SAVEABLE)}
+		return
+	_scene_state[String(map_id)] = _collect(GROUP_SAVEABLE)
+
+
+func _on_scene_change_started(_path: String) -> void:
+	_capture_current_map()
 
 
 func _collect(group: StringName) -> Dictionary:
@@ -166,14 +186,14 @@ static func _is_participant(node: Object) -> bool:
 ## Reads just the header, cheaply, for the slot-select UI. Returns {} when the
 ## slot is absent or unreadable.
 func read_slot_header(slot: int) -> Dictionary:
-	var payload := _read_slot(slot)
+	var payload := SaveFile.read(slot)
 	return payload.get("header", {}) if not payload.is_empty() else {}
 
 
 func load_from_slot(slot: int) -> bool:
 	if _loading:
 		return false
-	var payload := _read_slot(slot)
+	var payload := SaveFile.read(slot)
 	if payload.is_empty():
 		EventBus.load_completed.emit(slot, false)
 		return false
@@ -186,28 +206,14 @@ func load_from_slot(slot: int) -> bool:
 
 	# Autoloads first: the scene we are about to build reads their state.
 	_apply(GROUP_PROVIDER, payload.get("providers", {}))
-	# Scene nodes cannot exist yet; park their state for _on_world_ready.
-	_pending_scene_state = payload.get("scene", {})
+	# Scene nodes cannot exist yet; hold everything until each map is built.
+	_scene_state = (payload.get("scene", {}) as Dictionary).duplicate(true)
+	_pending_traveller = (payload.get("traveller", {}) as Dictionary).duplicate(true)
 
 	SceneLoader.change_scene(GameState.current_map, GameState.spawn_point)
 	_loading = false
 	EventBus.load_completed.emit(slot, true)
 	return true
-
-
-func _read_slot(slot: int) -> Dictionary:
-	var path := slot_path(slot)
-	if not FileAccess.file_exists(path):
-		return {}
-	var text := FileAccess.get_file_as_string(path)
-	if text.is_empty():
-		push_error("SaveManager: slot %d is empty or unreadable" % slot)
-		return {}
-	var parsed: Variant = JSON.parse_string(text)
-	if typeof(parsed) != TYPE_DICTIONARY:
-		push_error("SaveManager: slot %d is not valid JSON" % slot)
-		return {}
-	return parsed
 
 
 func _apply(group: StringName, states: Dictionary) -> void:
@@ -221,17 +227,17 @@ func _apply(group: StringName, states: Dictionary) -> void:
 
 
 func _on_world_ready(_world: Node) -> void:
-	if _pending_scene_state.is_empty():
-		return
-	var block: Dictionary = _pending_scene_state.get(String(current_map_id()), {})
+	var block: Dictionary = _scene_state.get(String(current_map_id()), {})
 	if not block.is_empty():
 		_apply(GROUP_SAVEABLE, block)
-	# Consumed on arrival. Task M3 makes this state outlive the transition so
-	# leaving a map and coming back does not empty it.
-	_pending_scene_state.clear()
+		# Kept, not consumed: this map will be entered again.
+
+	if not _pending_traveller.is_empty():
+		_apply(GROUP_TRAVELLER, _pending_traveller)
+		# Dropped now. Only the first map after a load restores an exact
+		# position; every door after it places the player at its spawn.
+		_pending_traveller.clear()
 
 
 func delete_slot(slot: int) -> void:
-	var path := slot_path(slot)
-	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	SaveFile.remove(slot)

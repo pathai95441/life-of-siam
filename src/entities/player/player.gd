@@ -36,7 +36,10 @@ var ground_velocity: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group(&"player")
-	add_to_group(SaveManager.GROUP_SAVEABLE)
+	# Not GROUP_SAVEABLE: the player belongs to no map. Filing them under one
+	# would mean returning to it drops them where they last stood there,
+	# ignoring the door they just walked through.
+	add_to_group(SaveManager.GROUP_TRAVELLER)
 	collision_layer = GameConstants.layer_mask(GameConstants.Layer.PLAYER)
 	collision_mask = GameConstants.layer_mask(GameConstants.Layer.WORLD) \
 		| GameConstants.layer_mask(GameConstants.Layer.NPC)

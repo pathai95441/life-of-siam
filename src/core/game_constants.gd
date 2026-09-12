@@ -85,7 +85,9 @@ static func layer_mask(layer: Layer) -> int:
 ## 1 -> 2: scene state became one block per map instead of a single flat
 ## dictionary, because two maps holding the same kind of system used to collide
 ## on the same save id.
-const SAVE_VERSION: int = 2
+## 2 -> 3: the player moved out of per-map scene state into its own traveller
+## block, so re-entering a map no longer overrides the door's spawn point.
+const SAVE_VERSION: int = 3
 const SAVE_DIR: String = "user://saves"
 const SAVE_SLOT_COUNT: int = 3
 const SETTINGS_PATH: String = "user://settings.cfg"

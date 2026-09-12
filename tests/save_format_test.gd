@@ -27,6 +27,8 @@ func _ready() -> void:
 	_test_v1_without_scene_state()
 	_test_newer_saves_are_not_mangled()
 	_test_two_maps_do_not_collide()
+	_test_v2_lifts_the_player_out_of_the_map()
+	_test_v1_walks_the_whole_chain()
 
 	print("\n==================================================")
 	print("  save_format_test: %d passed, %d failed" % [pass_count, fail_count])
@@ -45,6 +47,42 @@ func _v1_payload() -> Dictionary:
 			"shipping_bin": {"contents": {"turnip": 4}},
 		},
 	}
+
+
+## v2 filed the player under a map, so walking back in put them where they
+## last stood rather than at the door they came through.
+func _test_v2_lifts_the_player_out_of_the_map() -> void:
+	print("\n--- v2 moves the player out of the map ---")
+	var v2 := {
+		"header": {"version": 2},
+		"scene": {"farm": {
+			"farm_grid": {"cells": {"2,2": {"tilled": true}}},
+			"player": {"x": 64.0, "y": 32.0},
+		}},
+	}
+	var out := SaveMigration.migrate(v2)
+	check_eq("stamped as current", SaveMigration.version_of(out), GameConstants.SAVE_VERSION)
+	check("the player is in their own block",
+		(out.get("traveller", {}) as Dictionary).has("player"))
+	check_eq("with their position intact", out["traveller"]["player"]["x"], 64.0)
+	check("and no longer inside the map",
+		not (out["scene"]["farm"] as Dictionary).has("player"))
+	check("the map keeps everything else",
+		out["scene"]["farm"]["farm_grid"]["cells"].has("2,2"))
+
+
+## Players skip versions. A save from the first build has to walk every step,
+## which is the whole reason old branches are never deleted.
+func _test_v1_walks_the_whole_chain() -> void:
+	print("\n--- v1 all the way to the current format ---")
+	var out := SaveMigration.migrate(_v1_payload())
+	check_eq("arrives at the current version",
+		SaveMigration.version_of(out), GameConstants.SAVE_VERSION)
+	check("it went through the map-nesting step",
+		(out["scene"] as Dictionary).has(String(GameConstants.STARTING_MAP)))
+	check("and through the traveller step", out.has("traveller"))
+	check("with the field intact after both",
+		out["scene"][String(GameConstants.STARTING_MAP)]["farm_grid"]["cells"].has("0,0"))
 
 
 func _test_current_version_is_left_alone() -> void:
