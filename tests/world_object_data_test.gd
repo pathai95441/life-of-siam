@@ -38,8 +38,8 @@ func _ready() -> void:
 
 func _test_registry() -> void:
 	print("\n--- registry ---")
-	check_eq("Database loaded 4 world objects", Database.world_objects.size(), 4)
-	for id in [&"player", &"npc_adult", &"bed", &"sign_post"]:
+	check_eq("Database loaded 5 world objects", Database.world_objects.size(), 5)
+	for id in [&"player", &"npc_adult", &"bed", &"sign_post", &"shipping_bin"]:
 		check("'%s' is registered" % id, Database.get_world_object(id) != null)
 	check("unknown id returns null", Database.get_world_object(&"nope") == null)
 
@@ -53,6 +53,7 @@ func _test_canonical_scale() -> void:
 		&"npc_adult": [Vector2(0.6, 0.4), 1.8, true, 0.8],
 		&"bed": [Vector2(2.0, 1.5), 0.6, true, 1.0],
 		&"sign_post": [Vector2(0.4, 0.2), 1.4, false, 0.8],
+		&"shipping_bin": [Vector2(1.0, 1.0), 0.9, true, 1.0],
 	}
 	for id in expected:
 		var data := Database.get_world_object(id)

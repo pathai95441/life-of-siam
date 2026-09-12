@@ -11,7 +11,7 @@
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
 | **W** | **World-object model (2.5D foundation)** | 🟢 **เสร็จครบ W1–W8 · DoD ผ่าน 7/7** |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
-| 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 📋 **มีแผนแล้ว — รอยืนยัน 4 ข้อ** |
+| 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🔵 กำลังทำ — E1 ✅ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
 | 4 | ทำให้ดูเป็นเกม (TileSet, animation, เสียง) | ⬜ รอ |
 | 5 | ปล่อยได้ (save slot UI, localisation, CI) | ⬜ รอ |
@@ -68,8 +68,8 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **259 assertion ผ่านทั้งหมด**
-headless: `world_space` 35 · `world_object_data` 57 · `world_body` 20 · `projection` 29 · `entity` 47 · `smoke` 50 · `world` 16
+ชุดเทสต์ปัจจุบัน **293 assertion ผ่านทั้งหมด**
+headless: `world_space` 35 · `world_object_data` 65 · `world_body` 20 · `projection` 29 · `entity` 47 · `economy` 26 · `smoke` 50 · `world` 16
 windowed: `depth_sort` 5 (**ห้ามใส่ `--headless`** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
@@ -151,11 +151,11 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 | `SaveManager` group `saveable` | ✅ |
 | `WorldObjectData` + `WorldBody` + `Interactable` | ✅ จากเฟส W |
 | `ItemData.sell_price` / `buy_price` ที่ authored แล้ว | ✅ หัวผักกาด 35 · พริก 55 · เมล็ด 20/30 |
-| ❓ ตัดสินใจ 4 ข้อข้างล่าง | ⛔ **บล็อกอยู่** |
+| ตัดสินใจ 4 ข้อข้างล่าง | ✅ **ยืนยันแล้วทั้งหมด** |
 
-## ❓ ตัดสินใจที่ต้องการก่อนเริ่ม
+## ✅ ตัดสินใจแล้ว
 
-| # | คำถาม | ที่ผมเสนอ | ทำไม |
+| # | คำถาม | ตัดสินใจ | ทำไม |
 |---|---|---|---|
 | 1 | **ฝากของยังไง** | กด `E` ที่ถัง = ฝาก**ทั้ง stack ที่ถืออยู่** | เล็กที่สุดที่ทดสอบได้ UI เลือกของค่อยมาทีหลัง |
 | 2 | **ขายที่ไหน ซื้อที่ไหน** | **ถังส่งของ = ขายอย่างเดียว · ร้าน = ซื้ออย่างเดียว** | ตรงแนวเกม และไม่มีตรรกะขายซ้ำสองที่ |
@@ -187,7 +187,7 @@ ui/        shop_panel.gd       ← ใหม่: view เปล่า ๆ ฟั
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
-| **E1** | `ShippingBin` — Interactable รับของ เก็บไว้จนเช้า แล้วจ่ายเงิน · saveable · `wo_shipping_bin.tres` | ฝากแล้วของออกจากกระเป๋า · เช้าได้เงิน = ผลรวม `sell_price` · ถังว่างหลังจ่าย · **ของในถังรอดจาก save/load** |
+| ~~**E1**~~ ✅ | `ShippingBin` — Interactable รับของ เก็บไว้จนเช้า แล้วจ่ายเงิน · saveable · `wo_shipping_bin.tres` | **เสร็จ: `tests/economy_test.tscn` 26/26 ครบทุกเคสบั๊กคลาสสิก + invariant มูลค่า** |
 | **E2** | `ShopData` + `Shop` — ตรรกะซื้อล้วน ไม่มี UI | ซื้อได้เมื่อเงินพอ · **เงินไม่พอ = ไม่มีอะไรเปลี่ยน** · **กระเป๋าเต็ม = เงินไม่ถูกหัก** · ของที่ไม่ได้ขายซื้อไม่ได้ |
 | **E3** | `ShopPanel` — UI รายการของ ราคา ปุ่มซื้อ | เปิด/ปิดได้ · รายการตรงกับ `ShopData` · กดซื้อแล้วเงินและกระเป๋าเปลี่ยน |
 | **E4** | สรุปรายได้ตอนเช้า + toast | `day_started` แล้วขึ้นยอดขายเมื่อวาน |

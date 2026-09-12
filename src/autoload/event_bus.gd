@@ -27,6 +27,11 @@ signal player_slept()
 
 # --- Economy ------------------------------------------------------------
 signal money_changed(total: int, delta: int)
+## Emitted the morning after produce was left in a shipping bin.
+signal items_shipped(total_value: int, item_count: int)
+## Refused deposits say why, so the HUD can tell the player rather than
+## silently doing nothing.
+signal deposit_refused(item_id: StringName, reason: String)
 
 # --- Inventory ----------------------------------------------------------
 signal inventory_changed()

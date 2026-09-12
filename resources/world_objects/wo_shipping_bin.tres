@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldObjectData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/world_object_data.gd" id="1_wo"]
+
+[resource]
+script = ExtResource("1_wo")
+id = &"shipping_bin"
+display_name_th = "ถังส่งของ"
+footprint = Vector2(1.0, 1.0)
+height = 0.9
+origin = Vector2(0.5, 0.5)
+blocks_movement = true
+interaction_reach = 1.0
