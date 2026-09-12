@@ -10,6 +10,7 @@ var crops: Dictionary[StringName, CropData] = {}
 var npcs: Dictionary[StringName, NpcData] = {}
 var dialogues: Dictionary[StringName, DialogueData] = {}
 var world_objects: Dictionary[StringName, WorldObjectData] = {}
+var shops: Dictionary[StringName, ShopData] = {}
 
 const _DIRS := {
 	"items": "res://resources/items",
@@ -17,6 +18,7 @@ const _DIRS := {
 	"npcs": "res://resources/npcs",
 	"dialogue": "res://resources/dialogue",
 	"world_objects": "res://resources/world_objects",
+	"shops": "res://resources/shops",
 }
 
 
@@ -35,9 +37,22 @@ func _load_all() -> void:
 		_register(dialogues, res)
 	for res in _scan(_DIRS["world_objects"]):
 		_register(world_objects, res)
+	# Shops last: their validation reads the item registry.
+	for res in _scan(_DIRS["shops"]):
+		_register(shops, res)
 	_validate_world_objects()
-	print("[Database] %d items, %d crops, %d npcs, %d dialogues, %d world objects"
-		% [items.size(), crops.size(), npcs.size(), dialogues.size(), world_objects.size()])
+	_validate_shops()
+	print("[Database] %d items, %d crops, %d npcs, %d dialogues, %d world objects, %d shops"
+		% [items.size(), crops.size(), npcs.size(), dialogues.size(),
+			world_objects.size(), shops.size()])
+
+
+## A shop stocking something unbuyable would show an item nobody can purchase,
+## which is far easier to catch here than in a UI.
+func _validate_shops() -> void:
+	for id in shops:
+		for error in (shops[id] as ShopData).validation_errors():
+			push_error("Database: shop '%s' is invalid: %s" % [id, error])
 
 
 ## Physical definitions are load-bearing for collision and interaction, so a
@@ -98,6 +113,10 @@ func get_dialogue(id: StringName) -> DialogueData:
 
 func get_world_object(id: StringName) -> WorldObjectData:
 	return world_objects.get(id) as WorldObjectData
+
+
+func get_shop(id: StringName) -> ShopData:
+	return shops.get(id) as ShopData
 
 
 func has_item(id: StringName) -> bool:

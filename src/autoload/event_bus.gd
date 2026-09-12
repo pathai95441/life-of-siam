@@ -32,6 +32,8 @@ signal items_shipped(total_value: int, item_count: int)
 ## Refused deposits say why, so the HUD can tell the player rather than
 ## silently doing nothing.
 signal deposit_refused(item_id: StringName, reason: String)
+signal item_purchased(item_id: StringName, amount: int, cost: int)
+signal purchase_refused(item_id: StringName, reason: String)
 
 # --- Inventory ----------------------------------------------------------
 signal inventory_changed()

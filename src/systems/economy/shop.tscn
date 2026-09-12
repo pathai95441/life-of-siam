@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/systems/economy/shop.gd" id="1_shop"]
+[ext_resource type="Script" path="res://src/components/world_body.gd" id="2_body"]
+[ext_resource type="Script" path="res://src/components/placeholder_visual.gd" id="3_vis"]
+[ext_resource type="Resource" path="res://resources/world_objects/wo_shop_stall.tres" id="4_data"]
+[ext_resource type="Resource" path="res://resources/shops/shop_general.tres" id="5_stock"]
+
+[node name="Shop" type="Area2D"]
+script = ExtResource("1_shop")
+prompt = "ซื้อของ"
+prompt_en = "Shop"
+focus_priority = 5
+shop_data = ExtResource("5_stock")
+
+[node name="Visual" type="ColorRect" parent="."]
+color = Color(0.78, 0.62, 0.3, 1)
+mouse_filter = 2
+
+[node name="Body" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="WorldBody" type="Node" parent="." node_paths=PackedStringArray("collision_body", "interaction_area")]
+script = ExtResource("2_body")
+data = ExtResource("4_data")
+collision_body = NodePath("../Body")
+interaction_area = NodePath("..")
+
+[node name="PlaceholderVisual" type="Node" parent="." node_paths=PackedStringArray("world_body", "target")]
+script = ExtResource("3_vis")
+world_body = NodePath("../WorldBody")
+target = NodePath("../Visual")

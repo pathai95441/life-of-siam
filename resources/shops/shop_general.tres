@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ShopData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/shop_data.gd" id="1_shop"]
+
+[resource]
+script = ExtResource("1_shop")
+id = &"general"
+display_name_th = "ร้านของชำ"
+stock = Array[StringName]([&"turnip_seed", &"chili_seed"])
