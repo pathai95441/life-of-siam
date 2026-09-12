@@ -33,11 +33,75 @@ func _ready() -> void:
 	_test_cell_screen_shape()
 	_test_target_cell_directions()
 	_test_probe_matches_target()
+	_test_entity_depth_agrees_with_ground(world)
 
 	print("\n==================================================")
 	print("  projection_test: %d passed, %d failed" % [pass_count, fail_count])
 	print("==================================================")
 	get_tree().quit(1 if fail_count > 0 else 0)
+
+
+## Godot sorts by screen y; our model sorts by ground y. Those agree only
+## because screen y is ground y times the depth ratio, and only while entity
+## nodes sit at their ground point with any height carried by a child offset.
+## If someone ever moves a node up to "raise" it, sorting silently breaks --
+## so the equivalence is asserted rather than assumed.
+func _test_entity_depth_agrees_with_ground(world: World) -> void:
+	print("\n--- entity depth order follows the ground point ---")
+	var entities := world.get_node_or_null("Entities") as Node2D
+	check("Entities exists", entities != null)
+	if entities == null:
+		return
+	check("Entities is y-sorted", entities.y_sort_enabled)
+
+	var ordered: Array[Node2D] = []
+	for child in entities.get_children():
+		if child is Node2D:
+			ordered.append(child)
+	check("there are entities to order", ordered.size() >= 2)
+
+	for node in ordered:
+		var ground := WorldSpace.screen_to_ground(node.position)
+		check_eq("'%s' screen y matches its ground depth key" % node.name,
+			snappedf(node.position.y, 0.001),
+			snappedf(WorldSpace.depth_key(ground), 0.001))
+
+	# Sorting by screen y and by ground depth must produce the same sequence.
+	var by_screen := ordered.duplicate()
+	by_screen.sort_custom(_screen_before)
+	var by_ground := ordered.duplicate()
+	by_ground.sort_custom(_ground_before)
+	check("screen order and ground order are the same sequence", by_screen == by_ground)
+
+	# Height must not leak into depth: the tallest object is not automatically
+	# the frontmost one.
+	var tallest := _tallest(ordered)
+	var frontmost: Node2D = by_ground[-1]
+	print("    tallest: %s   frontmost: %s" % [
+		tallest.name if tallest else "-", frontmost.name])
+
+
+static func _screen_before(a: Node2D, b: Node2D) -> bool:
+	return a.position.y < b.position.y
+
+
+static func _ground_before(a: Node2D, b: Node2D) -> bool:
+	var key_a := WorldSpace.depth_key(WorldSpace.screen_to_ground(a.position))
+	var key_b := WorldSpace.depth_key(WorldSpace.screen_to_ground(b.position))
+	return key_a < key_b
+
+
+func _tallest(nodes: Array[Node2D]) -> Node2D:
+	var best: Node2D = null
+	var best_height := -1.0
+	for node in nodes:
+		var body := node.get_node_or_null("WorldBody") as WorldBody
+		if body == null or body.data == null:
+			continue
+		if body.data.height > best_height:
+			best_height = body.data.height
+			best = node
+	return best
 
 
 func _player() -> Player:

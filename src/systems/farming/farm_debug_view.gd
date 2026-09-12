@@ -22,12 +22,39 @@ func _ready() -> void:
 	queue_redraw()
 
 
+## Two passes, because soil and crops are not the same kind of thing.
+##
+## Soil lies flat on the ground: it can never occlude anything, so the order
+## between tiles is irrelevant -- but it must all be underneath. Crops stand
+## up out of the ground, so they are drawn afterwards and sorted back to
+## front, or a plant in a near row would be painted over by the soil behind it.
+## That is the bug the W6 capture showed.
 func _draw() -> void:
 	if not enabled or grid == null:
 		return
 	_draw_field_outline()
-	for cell in grid.cells():
-		_draw_cell(cell, grid.get_cell(cell))
+
+	var cells := grid.cells()
+	for cell in cells:
+		_draw_soil(cell, grid.get_cell(cell))
+
+	cells.sort_custom(_sorts_behind)
+	for cell in cells:
+		var soil := grid.get_cell(cell)
+		if soil != null and soil.has_crop():
+			_draw_crop(_cell_base(cell), soil)
+
+
+## Back to front by the cell's ground position, through the same key entities
+## are sorted by, so the farm and the world agree about what is in front.
+static func _sorts_behind(a: Vector2i, b: Vector2i) -> bool:
+	return WorldSpace.depth_key(Vector2(a)) < WorldSpace.depth_key(Vector2(b))
+
+
+## Screen point where a cell's crop stands: the middle of its ground tile.
+func _cell_base(cell: Vector2i) -> Vector2:
+	return WorldSpace.ground_to_screen(WorldSpace.cell_origin(cell)) \
+		+ WorldSpace.footprint_screen_size(Vector2.ONE) * 0.5
 
 
 ## Cells project to a foreshortened rectangle, not a square: that shape is the
@@ -38,19 +65,14 @@ func _draw_field_outline() -> void:
 	draw_rect(Rect2(origin, extent), Color(1, 1, 1, 0.06), false, 1.0)
 
 
-func _draw_cell(cell: Vector2i, soil: SoilCell) -> void:
-	if soil == null:
+func _draw_soil(cell: Vector2i, soil: SoilCell) -> void:
+	if soil == null or not soil.tilled:
 		return
 	var origin := WorldSpace.ground_to_screen(WorldSpace.cell_origin(cell))
 	var size := WorldSpace.footprint_screen_size(Vector2.ONE)
-
-	if soil.tilled:
-		var soil_color := Color(0.22, 0.15, 0.10) if soil.watered else Color(0.35, 0.22, 0.12)
-		draw_rect(Rect2(origin, size), soil_color)
-		draw_rect(Rect2(origin, size), Color(0, 0, 0, 0.25), false, 1.0)
-
-	if soil.has_crop():
-		_draw_crop(origin + size * 0.5, soil)
+	var soil_color := Color(0.22, 0.15, 0.10) if soil.watered else Color(0.35, 0.22, 0.12)
+	draw_rect(Rect2(origin, size), soil_color)
+	draw_rect(Rect2(origin, size), Color(0, 0, 0, 0.25), false, 1.0)
 
 
 ## Plants stand up out of the ground: an upright quad whose height follows the

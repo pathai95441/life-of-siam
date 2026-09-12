@@ -9,7 +9,7 @@
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
-| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1–W6 ✅ เหลือ W7 W8 |
+| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1–W7 ✅ เหลือ W8 |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -68,7 +68,9 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **243 assertion ผ่านทั้งหมด** (`world_space` 35 · `world_object_data` 57 · `world_body` 20 · `projection` 21 · `smoke` 50 · `world` 60)
+ชุดเทสต์ปัจจุบัน **256 assertion ผ่านทั้งหมด**
+`world_space` 35 · `world_object_data` 57 · `world_body` 20 · `projection` 29 · `smoke` 50 · `world` 60 (headless)
+`depth_sort` 5 (**ต้องรันแบบมีหน้าต่าง** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
@@ -78,7 +80,7 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 | ~~**W4**~~ ✅ | ย้าย `Player` มาใช้ `world_body` ลบ shape ที่ hardcode | **เสร็จ: `world_test` 13→32 · probe reach band วัดได้ · sprite derive จาก data** |
 | ~~**W5**~~ ✅ | ย้าย `Npc` / `Bed` / `SignPost` มาใช้ `world_body` | **เสร็จ: `world_test` 32→60 · DoD ข้อ 1 ปิด · reach band กว้างขึ้นวัดได้** |
 | ~~**W6**~~ ✅ | `FarmGrid` เรียก `WorldSpace` · movement/targeting เข้า projected space · แยก `FarmDebugView` ออกจาก model | **เสร็จ: `projection_test` 21/21 · D13 ปิด · `TILE_SIZE` ถูกลบทั้งโปรเจกต์** |
-| **W7** | depth sorting ด้วย world y | เทสต์ฉากเล็ก: วางวัตถุ 3 ชิ้นต่างระยะ ยืนยันลำดับการวาด · **และแก้ `FarmDebugView` ที่วนตาม dictionary order ทำให้ดินแถวหน้าทับพืชแถวหลัง — เห็นในภาพ W6 แล้ว** |
+| ~~**W7**~~ ✅ | depth sorting ด้วย world y | **เสร็จ: `depth_sort_test` อ่านพิกเซลจริง 5/5 · `FarmDebugView` วาดสองรอบเรียงด้วย `depth_key` · invariant ของ entity ล็อกด้วยเทสต์** |
 | **W8** | ซอย `smoke_test.gd` (125 บรรทัด → หลายไฟล์) ตามกฎ ≤40 บรรทัด/ฟังก์ชัน | เทสต์ทั้งหมดยังผ่าน จำนวน assertion ไม่ลด |
 
 ## TASK ORDER
@@ -123,6 +125,10 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 ---
 
 ## DISCOVERED TASKS
+
+| # | งาน | กฎที่ผิด | เสนอทำที่ |
+|---|---|---|---|
+| D15 | **พืชวาดหลัง entity เสมอ** — `FarmDebugView` เป็น node เดียวใต้ `FarmGrid` จึงมี sort key เดียว ผู้เล่นที่ยืนหลังพืชสูงไม่ถูกบัง | 2.5D | เฟส 4 พร้อมงานศิลป์ (พืชเป็น sprite ต่อ cell ในชั้นที่ sort แล้ว) |
 
 พบระหว่างตรวจโปรเจกต์ตามกฎใหม่ ยังไม่จัดเข้าเฟส
 

@@ -20,12 +20,21 @@
 ## คำสั่งที่ต้องรันได้ทุกครั้งก่อนบอกว่าเสร็จ
 
 ```bash
-# compile ทั้งโปรเจกต์ — ต้องไม่มี SCRIPT ERROR
+# import + ตรวจ parse error (ต้องรันก่อนเสมอเมื่อมีไฟล์ใหม่)
 godot --headless --path . --editor --quit
 
-# เทสต์ core loop — exit code ต้องเป็น 0
-godot --headless --path . tests/smoke_test.tscn
+# ชุดเทสต์ headless — exit code ต้องเป็น 0 ทุกตัว
+for t in world_space_test world_object_data_test world_body_test \
+         projection_test smoke_test world_test; do
+  godot --headless --path . tests/$t.tscn
+done
+
+# เทสต์ที่ต้องเรนเดอร์จริง — ห้ามใส่ --headless
+godot --path . tests/depth_sort_test.tscn
 ```
+
+⚠️ **`--editor --quit` ไม่ใช่ full compile check** — มันไม่รายงานการอ้าง const ที่ถูกลบ
+ไปแล้ว เทสต์เท่านั้นที่จับได้ อย่าถือว่า "compile clean" แปลว่าปลอดภัย
 
 Godot 4.7.2 อยู่ใน PATH เป็น `godot`
 
