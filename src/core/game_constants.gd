@@ -82,7 +82,10 @@ static func layer_mask(layer: Layer) -> int:
 	return 1 << (int(layer) - 1)
 
 # --- Save ---
-const SAVE_VERSION: int = 1
+## 1 -> 2: scene state became one block per map instead of a single flat
+## dictionary, because two maps holding the same kind of system used to collide
+## on the same save id.
+const SAVE_VERSION: int = 2
 const SAVE_DIR: String = "user://saves"
 const SAVE_SLOT_COUNT: int = 3
 const SETTINGS_PATH: String = "user://settings.cfg"

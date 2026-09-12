@@ -81,7 +81,7 @@ func save_to_slot(slot: int) -> bool:
 	var payload := {
 		"header": _build_header(),
 		"providers": _collect(GROUP_PROVIDER),
-		"scene": _collect(GROUP_SAVEABLE),
+		"scene": _collect_scene_state(),
 	}
 
 	var file := FileAccess.open(slot_path(slot), FileAccess.WRITE)
@@ -116,6 +116,26 @@ func _build_header() -> Dictionary:
 		"playtime": GameState.total_playtime,
 		"map": GameState.current_map,
 	}
+
+
+## Which map the scene-level saveables currently belong to.
+func current_map_id() -> StringName:
+	var world := get_tree().get_first_node_in_group(&"world") as World
+	return world.map_id if world != null else &""
+
+
+## Scene state, filed under the map it came from.
+##
+## The map prefix is added here rather than by the nodes themselves: a
+## [FarmGrid] should be a FarmGrid wherever it is placed, and making each
+## saveable look up which map it is in would put that knowledge in every one of
+## them. Without the prefix two maps holding soil write to the same key and one
+## of them is dropped.
+func _collect_scene_state() -> Dictionary:
+	var map_id := current_map_id()
+	if map_id == &"":
+		return {}
+	return {String(map_id): _collect(GROUP_SAVEABLE)}
 
 
 func _collect(group: StringName) -> Dictionary:
@@ -162,7 +182,7 @@ func load_from_slot(slot: int) -> bool:
 	current_slot = slot
 	EventBus.load_started.emit(slot)
 
-	payload = _migrate(payload)
+	payload = SaveMigration.migrate(payload)
 
 	# Autoloads first: the scene we are about to build reads their state.
 	_apply(GROUP_PROVIDER, payload.get("providers", {}))
@@ -203,9 +223,11 @@ func _apply(group: StringName, states: Dictionary) -> void:
 func _on_world_ready(_world: Node) -> void:
 	if _pending_scene_state.is_empty():
 		return
-	_apply(GROUP_SAVEABLE, _pending_scene_state)
-	# Consume it: a later door transition must use its spawn point, not the
-	# position that was saved three maps ago.
+	var block: Dictionary = _pending_scene_state.get(String(current_map_id()), {})
+	if not block.is_empty():
+		_apply(GROUP_SAVEABLE, block)
+	# Consumed on arrival. Task M3 makes this state outlive the transition so
+	# leaving a map and coming back does not empty it.
 	_pending_scene_state.clear()
 
 
@@ -213,24 +235,3 @@ func delete_slot(slot: int) -> void:
 	var path := slot_path(slot)
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
-
-
-# --- Migration ---------------------------------------------------------------
-
-## Upgrades an older payload in place. Add one `if version < N` block per
-## format bump and never delete an old block — players skip versions.
-func _migrate(payload: Dictionary) -> Dictionary:
-	var header: Dictionary = payload.get("header", {})
-	var version := int(header.get("version", 0))
-	if version == GameConstants.SAVE_VERSION:
-		return payload
-	if version > GameConstants.SAVE_VERSION:
-		push_warning("SaveManager: save is from a newer build (v%d > v%d); loading anyway"
-			% [version, GameConstants.SAVE_VERSION])
-		return payload
-
-	# if version < 2: ...upgrade v1 -> v2 here...
-
-	header["version"] = GameConstants.SAVE_VERSION
-	payload["header"] = header
-	return payload
