@@ -12,7 +12,7 @@
 | **W** | **World-object model (2.5D foundation)** | 🟢 **เสร็จครบ W1–W8 · DoD ผ่าน 7/7** |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🟢 **เสร็จครบ E1–E5 · DoD ผ่าน 8/8** |
-| 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | 🔵 กำลังทำ — M1 ✅ M2 ✅ M3 ✅ (งานเซฟจบ) |
+| 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | 🔵 กำลังทำ — M1–M4 ✅ เหลือ M5 M6 M7 |
 | 4 | ทำให้ดูเป็นเกม (TileSet, animation, เสียง) | ⬜ รอ |
 | 5 | ปล่อยได้ (save slot UI, localisation, CI) | ⬜ รอ |
 
@@ -68,8 +68,8 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **483 assertion ผ่านทั้งหมด**
-headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 31 · `entity` 69 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `daily_summary` 12 · `economy_loop` 21 · `map` 14 · `map_state` 16 · `save_format` 28 · `save_disk` 16 · `smoke` 50 · `world` 16
+ชุดเทสต์ปัจจุบัน **507 assertion ผ่านทั้งหมด**
+headless: `world_space` 35 · `world_object_data` 81 · `world_body` 20 · `projection` 31 · `entity` 69 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `daily_summary` 12 · `economy_loop` 21 · `map` 14 · `map_state` 16 · `door` 16 · `save_format` 28 · `save_disk` 16 · `smoke` 50 · `world` 16
 windowed: `depth_sort` 5 (**ห้ามใส่ `--headless`** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
@@ -314,7 +314,7 @@ entities/npc/
 | ~~**M1**~~ ✅ | `MapData` registry + `World.map_id` + `SceneLoader` ตั้ง `current_map` ทุกครั้ง (แก้ **P1**) | **เสร็จ: `tests/map_test.tscn` 14/14** |
 | ~~**M2**~~ ✅ | scene state แยกเป็นก้อนต่อแผนที่ + แยก `SaveMigration` + บัมพ์ format v2 (แก้ **P2**) | **เสร็จ: `save_format_test` 19/19 · `save_disk_test` 16/16** |
 | ~~**M3**~~ ✅ | สถานะฉากคงอยู่ข้ามการเปลี่ยนแผนที่ (แก้ **P3**) + แยกผู้เล่นเป็น traveller (แก้ **D18**) + format v3 | **เสร็จ: `map_state_test` 16/16 · `save_format` 28/28 · chain v1→v3** |
-| **M4** | `Door` Interactable + `wo_door.tres` | กด `E` แล้วย้ายแผนที่ · ไปโผล่ที่ spawn ที่ระบุ · ประตูขากลับพากลับที่เดิม |
+| ~~**M4**~~ ✅ | `Door` Interactable + `wo_door.tres` | **เสร็จ: `door_test` 16/16 · เปลี่ยนฉากจริงครั้งแรกในชุดเทสต์** |
 | **M5** | `house.tscn` — บ้านผู้เล่น ย้ายเตียงเข้าไป | เดินเข้าออกได้ · นอนในบ้านแล้ววันเปลี่ยน · ถังส่งของยังจ่ายถูก |
 | **M6** | แก้ **D4** — ธง `talked_<npc>_day_<n>` เป็น `last_talked_day` ต่อ NPC | คุย 100 วันแล้วขนาดเซฟไม่โต · ยังได้คะแนนวันละครั้ง |
 | **M7** | `NpcSchedule` — ขยับ NPC ตามชั่วโมง | เวลา X NPC อยู่จุด Y · ข้ามวันแล้วกลับจุดเริ่ม |

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldObjectData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/world_object_data.gd" id="1_wo"]
+
+[resource]
+script = ExtResource("1_wo")
+id = &"door"
+display_name_th = "ประตู"
+footprint = Vector2(1.0, 0.4)
+height = 2.0
+origin = Vector2(0.5, 0.5)
+blocks_movement = false
+interaction_reach = 0.8

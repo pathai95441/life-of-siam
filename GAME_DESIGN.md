@@ -69,6 +69,7 @@ screen_y = y * 32 * 0.5  -  z * 32       (implemented in src/core/world_space.gd
 | ✅ เตียง | 2 × 1.5 | 0.6 | ✅ | `wo_bed.tres` · reach 1.0 |
 | ✅ ถังส่งของ | 1 × 1 | 0.9 | ✅ | `wo_shipping_bin.tres` · reach 1.0 |
 | ✅ แผงลอย | 2.5 × 1.2 | 2.2 | ✅ | `wo_shop_stall.tres` · reach 1.0 |
+| ✅ ประตู | 1 × 0.4 | 2.0 | — | `wo_door.tres` · reach 0.8 · เดินยืนในกรอบประตูได้ |
 | ✅ ป้าย | 0.4 × 0.2 | 1.4 | — | `wo_sign_post.tres` · reach 0.8 |
 | ❓ พืชในแปลง | 1 × 1 | 0.3–1.0 | — | สูงตาม growth stage |
 | ❓ แปลงดิน 1 ช่อง | 1 × 1 | 0 | — | แบนราบ |

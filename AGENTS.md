@@ -77,6 +77,14 @@ Godot 4.7.2 อยู่ใน PATH เป็น `godot`
     `--editor --quit` ซึ่งรายงาน parse error ตรง ๆ (`pkill -9 -f "godot "` เพื่อล้าง
     process ที่ค้าง — pattern `Godot.app/...` ไม่แมตช์เพราะรันผ่าน symlink `godot`)
 
+### เทสต์ที่ต้องเปลี่ยนฉากจริง
+14f. การเปลี่ยนฉากจะ free `current_scene` ซึ่งคือตัวฉากเทสต์เอง ให้ยกบทบาทนั้น
+    ให้ node ทิ้ง ๆ ก่อน (`get_tree().current_scene = stand_in`) แล้วเทสต์จะรอด
+    และ **ต้อง `await get_tree().process_frame` ก่อน** ไม่งั้น root ยัง setup
+    ลูกไม่เสร็จและ `add_child` จะถูกปฏิเสธ
+14g. `SaveManager.new_game()` **เริ่มเปลี่ยนฉากเอง** อย่าเรียกในเทสต์ที่ทดสอบ
+    การเปลี่ยนฉาก ให้ reset autoload ตรง ๆ แทน
+
 ### ข้อความไทย
 14b. **ห้ามตัด string ไทยด้วย `.left(n)` / `.substr()` ตามจำนวนตัวอักษร** — ภาษาไทยมี
     grapheme cluster (พยัญชนะ + สระ + วรรณยุกต์) การตัดกลาง cluster ทำให้วรรณยุกต์
