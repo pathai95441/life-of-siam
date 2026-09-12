@@ -44,6 +44,8 @@ func _ready() -> void:
 	# The player must not act while a conversation or menu owns the input.
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_finished.connect(_on_dialogue_finished)
+	EventBus.shop_opened.connect(_on_shop_opened)
+	EventBus.shop_closed.connect(unlock)
 
 	probe.point_towards(facing)
 	EventBus.player_spawned.emit(self)
@@ -159,6 +161,13 @@ func _on_dialogue_started(_npc_id: StringName) -> void:
 
 func _on_dialogue_finished(_npc_id: StringName) -> void:
 	unlock()
+
+
+## Same treatment as dialogue: a player who can walk away while a window is
+## open leaves it hanging over an empty screen. A third case like this would
+## be the point to generalise into one "who owns input" concept.
+func _on_shop_opened(_shop: Node) -> void:
+	lock(&"shopping")
 
 
 # --- Save contract -----------------------------------------------------------

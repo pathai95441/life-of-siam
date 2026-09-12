@@ -11,7 +11,7 @@
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
 | **W** | **World-object model (2.5D foundation)** | 🟢 **เสร็จครบ W1–W8 · DoD ผ่าน 7/7** |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
-| 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🔵 กำลังทำ — E1 ✅ E2 ✅ |
+| 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🔵 กำลังทำ — E1 ✅ E2 ✅ E3 ✅ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
 | 4 | ทำให้ดูเป็นเกม (TileSet, animation, เสียง) | ⬜ รอ |
 | 5 | ปล่อยได้ (save slot UI, localisation, CI) | ⬜ รอ |
@@ -68,8 +68,8 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **333 assertion ผ่านทั้งหมด**
-headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 29 · `entity` 47 · `economy` 26 · `shop` 32 · `smoke` 50 · `world` 16
+ชุดเทสต์ปัจจุบัน **352 assertion ผ่านทั้งหมด**
+headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 29 · `entity` 47 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `smoke` 50 · `world` 16
 windowed: `depth_sort` 5 (**ห้ามใส่ `--headless`** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
@@ -189,7 +189,7 @@ ui/        shop_panel.gd       ← ใหม่: view เปล่า ๆ ฟั
 |---|---|---|
 | ~~**E1**~~ ✅ | `ShippingBin` — Interactable รับของ เก็บไว้จนเช้า แล้วจ่ายเงิน · saveable · `wo_shipping_bin.tres` | **เสร็จ: `tests/economy_test.tscn` 26/26 ครบทุกเคสบั๊กคลาสสิก + invariant มูลค่า** |
 | ~~**E2**~~ ✅ | `ShopData` + `Shop` — ตรรกะซื้อล้วน ไม่มี UI | **เสร็จ: `tests/shop_test.tscn` 32/32 · ทุก refusal path ยืนยันว่าไม่มีอะไรเปลี่ยนเลย** |
-| **E3** | `ShopPanel` — UI รายการของ ราคา ปุ่มซื้อ | เปิด/ปิดได้ · รายการตรงกับ `ShopData` · กดซื้อแล้วเงินและกระเป๋าเปลี่ยน |
+| ~~**E3**~~ ✅ | `ShopPanel` — UI รายการของ ราคา ปุ่มซื้อ | **เสร็จ: `tests/shop_ui_test.tscn` 19/19 · panel ไม่ตัดสินอะไรเอง ถาม `Shop` อย่างเดียว** |
 | **E4** | สรุปรายได้ตอนเช้า + toast | `day_started` แล้วขึ้นยอดขายเมื่อวาน |
 | **E5** | วาง `ShippingBin` + `Shop` ลง `world.tscn` + เทสต์ integration | เดินไปกด `E` ได้จริงทั้งสอง · reach band ครอบ probe |
 

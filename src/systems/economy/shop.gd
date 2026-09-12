@@ -23,7 +23,7 @@ func interact(actor: Node) -> void:
 	if shop_data == null:
 		push_error("Shop '%s' has no ShopData" % name)
 		return
-	EventBus.ui_window_opened.emit(&"shop")
+	EventBus.shop_opened.emit(self)
 
 
 # --- Queries -----------------------------------------------------------------

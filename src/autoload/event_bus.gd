@@ -34,6 +34,11 @@ signal items_shipped(total_value: int, item_count: int)
 signal deposit_refused(item_id: StringName, reason: String)
 signal item_purchased(item_id: StringName, amount: int, cost: int)
 signal purchase_refused(item_id: StringName, reason: String)
+## Carries the shop itself, not just an id: the panel has to ask it what it
+## stocks and tell it to sell. Typed as Node so the bus keeps depending on
+## nothing.
+signal shop_opened(shop: Node)
+signal shop_closed()
 
 # --- Inventory ----------------------------------------------------------
 signal inventory_changed()
