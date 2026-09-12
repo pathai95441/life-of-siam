@@ -68,6 +68,10 @@ Godot 4.7.2 อยู่ใน PATH เป็น `godot`
     จะเป็น `null` เงียบ ๆ ไม่มี error — เสียเวลาไปแล้วครั้งหนึ่งกับ `player.tscn`
     ถ้าไม่แน่ใจ format ให้ Godot เขียนเอง: instantiate ฉาก ตั้งค่า แล้ว
     `PackedScene.pack()` + `ResourceSaver.save()` ทับไฟล์ แล้วอ่านผลลัพธ์
+14e. **script ที่ถูกอ้างจากภายนอกต้องมี `class_name`** — ถ้า test ถือ node ไว้ในตัวแปร
+    ที่ type เป็นคลาส engine (เช่น `CanvasLayer`) การเรียก **method** ยังผ่านแบบ dynamic
+    แต่การอ่าน **const หรือ property** ของสคริปต์จะ resolve แบบ static แล้วพัง
+    ใส่ `class_name` แล้ว type ตัวแปรให้ตรง ปัญหาหายทั้งหมด
 14d. **ถ้าสคริปต์ของฉากที่สั่งรัน parse ไม่ผ่าน Godot headless จะค้าง ไม่ใช่ออกด้วย error**
     ถ้ารันแล้วไม่มี output เลย ให้สงสัย parse error ก่อน แล้วเช็คด้วย
     `--editor --quit` ซึ่งรายงาน parse error ตรง ๆ (`pkill -9 -f "godot "` เพื่อล้าง

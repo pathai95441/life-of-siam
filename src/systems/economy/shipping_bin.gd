@@ -103,8 +103,10 @@ func _on_day_started(_day: int, _season: int, _year: int) -> void:
 	_contents.clear()
 
 	GameState.add_money(total)
+	# Reports the fact and stops there. How a day's earnings are shown is the
+	# UI's decision, and duplicating it here would put the same news on screen
+	# twice the moment anything richer than a toast exists.
 	EventBus.items_shipped.emit(total, item_count)
-	EventBus.toast_posted.emit("ขายได้ %d ฿" % total)
 
 
 # --- Save contract -----------------------------------------------------------

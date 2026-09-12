@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://src/systems/economy/shipping_bin.tscn" id="13_bin"]
 [ext_resource type="PackedScene" path="res://src/systems/economy/shop.tscn" id="14_shop"]
 [ext_resource type="PackedScene" path="res://src/ui/shop/shop_panel.tscn" id="15_shopui"]
+[ext_resource type="PackedScene" path="res://src/ui/hud/daily_summary.tscn" id="16_summary"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h"]
 size = Vector2(960, 16)
@@ -101,6 +102,8 @@ position = Vector2(-200, -140)
 [node name="DialogueBox" parent="Ui" instance=ExtResource("9_dialogue")]
 
 [node name="InventoryPanel" parent="Ui" instance=ExtResource("10_inventory")]
+
+[node name="DailySummary" parent="Ui" instance=ExtResource("16_summary")]
 
 [node name="ShopPanel" parent="Ui" instance=ExtResource("15_shopui")]
 

@@ -9,7 +9,7 @@ var pass_count := 0
 var fail_count := 0
 
 var _shop: Shop
-var _panel: CanvasLayer
+var _panel: ShopPanel
 
 
 func check(label: String, condition: bool) -> void:

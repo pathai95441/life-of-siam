@@ -16,7 +16,7 @@ var _player: Player
 var _grid: FarmGrid
 var _bin: ShippingBin
 var _shop: Shop
-var _panel: CanvasLayer
+var _panel: ShopPanel
 
 
 func check(label: String, condition: bool) -> void:
@@ -39,6 +39,7 @@ func _ready() -> void:
 	_test_grow_ship_and_get_paid()
 	_test_spend_it_at_the_shop()
 	_test_a_full_day_conserves_value()
+	_test_morning_summary_reports_the_sale()
 
 	print("\n==================================================")
 	print("  economy_loop_test: %d passed, %d failed" % [pass_count, fail_count])
@@ -143,6 +144,41 @@ func _test_a_full_day_conserves_value() -> void:
 
 	check_eq("money moved by exactly what was bought and sold",
 		GameState.money, start_money - seed_price + shipped)
+
+
+## E4: the morning notice has to be fed by the real bin in the real world, not
+## just by an emitted signal in a test scene.
+func _test_morning_summary_reports_the_sale() -> void:
+	print("\n--- the morning summary reports it ---")
+	var summary := _find_summary()
+	check("the summary is in the world", summary != null)
+	if summary == null:
+		return
+	summary.hide_summary()
+
+	Inventory.add_item(&"turnip", 4)
+	Inventory.select(_slot_holding(&"turnip"))
+	_bin.interact(_player)
+	var expected := _bin.pending_value()
+	GameClock.sleep_until_morning()
+
+	check("the summary appeared after payday", summary.is_showing())
+	check_eq("it shows what the bin actually paid",
+		summary.amount_label.text, "+%d ฿" % expected)
+
+
+func _find_summary() -> DailySummary:
+	for node in _all(get_tree().root):
+		if node is DailySummary:
+			return node
+	return null
+
+
+func _all(root: Node) -> Array[Node]:
+	var out: Array[Node] = [root]
+	for child in root.get_children():
+		out.append_array(_all(child))
+	return out
 
 
 func _slot_holding(item_id: StringName) -> int:

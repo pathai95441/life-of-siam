@@ -151,6 +151,7 @@ GDScript แก้ cycle แบบนี้ได้ไม่แน่นอน 
 | **Interaction** | `interactable.gd`, `interaction_probe.gd` | หา target ที่ดีที่สุดรอบตัว | วัตถุตัดสินว่า "interact แล้วเกิดอะไร" ผู้เล่นตัดสินแค่ "เมื่อไร" — เพราะ inversion นี้ NPC/เตียง/ป้ายจึงใช้ probe ตัวเดียวกัน |
 | **Dialogue** | `dialogue_system.gd` + `dialogue_box.gd` | คุยทีละบรรทัด | runner ถือ state, box เป็น view เปล่า ๆ เปลี่ยน UI ได้ไม่กระทบ logic |
 | **Scene flow** | `scene_loader.gd` | fade + threaded load + spawn point | ทุกการเปลี่ยนฉากผ่านที่นี่ ไม่มีใครเรียก `change_scene_to_file` เอง |
+| **Economy** | `shipping_bin.gd`, `shop.gd`, `shop_data.gd` | ขายผลผลิต · ซื้อของ | ถังขาย ร้านซื้อ ไม่มีใครทำงานของอีกฝ่าย — **ที่เดียวที่เงินถูกสร้าง และที่เดียวที่ถูกทำลาย** · ราคามาจาก `ItemData` ไม่ใช่จากร้าน · ตรรกะทั้งหมดทดสอบได้โดยไม่ต้องเรนเดอร์ |
 | **Audio** | `audio_manager.gd` | เพลง crossfade + SFX pool 12 ตัว | pool เพราะสร้าง player ต่อเสียงเดินจะกวน scene tree |
 | **Settings** | `settings_manager.gd` | เสียง/จอ/ภาษา → `user://settings.cfg` | แยกจากเซฟ เพราะต้องรอดจากการลบเซฟทุกช่อง |
 
@@ -206,8 +207,8 @@ y_sort ของ Godot เรียงตาม screen y ซึ่งตรง�
 ## 5. ระบบที่ยังขาด
 
 **จำเป็นก่อนจะเรียกว่าเกม**
-1. **Shop / เศรษฐกิจ** — `sell_price`/`buy_price` มีใน `ItemData` แล้ว แต่ไม่มีที่ให้ซื้อขาย
-2. **Shipping bin** — ทางระบายผลผลิตเป็นเงิน หัวใจของ loop รายวัน
+1. ~~Shop / เศรษฐกิจ~~ ✅ เฟส 2
+2. ~~Shipping bin~~ ✅ เฟส 2
 3. **แผนที่หลายผืน + ประตู** — `SceneLoader` รับ spawn point ไว้แล้ว แต่ยังมีแผนที่เดียว
 4. **NPC schedule** — ตอนนี้ NPC ยืนนิ่ง ควรเป็น component แยกที่ขยับ body ไม่ใช่ยัดใน `npc.gd`
 5. **Animation + audio จริง** — ทั้งสองระบบมีที่รอไว้แล้ว ขาดแต่ไฟล์

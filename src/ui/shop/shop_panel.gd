@@ -1,3 +1,4 @@
+class_name ShopPanel
 extends CanvasLayer
 ## View for [Shop]. Lists what is for sale and asks the shop to sell it.
 ##
