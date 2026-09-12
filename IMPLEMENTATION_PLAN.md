@@ -9,7 +9,7 @@
 |---|---|---|
 | 0 | ทำให้รันจริง | 🟢 5/5 — เห็นภาพจากเกมจริงแล้ว (`tests/capture.tscn`) |
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
-| **W** | **World-object model (2.5D foundation)** | 🔵 กำลังทำ — W1–W7 ✅ เหลือ W8 |
+| **W** | **World-object model (2.5D foundation)** | 🟢 **เสร็จครบ W1–W8 · DoD ผ่าน 7/7** |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
 | 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | ⬜ รอ |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
@@ -68,9 +68,9 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **256 assertion ผ่านทั้งหมด**
-`world_space` 35 · `world_object_data` 57 · `world_body` 20 · `projection` 29 · `smoke` 50 · `world` 60 (headless)
-`depth_sort` 5 (**ต้องรันแบบมีหน้าต่าง** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
+ชุดเทสต์ปัจจุบัน **259 assertion ผ่านทั้งหมด**
+headless: `world_space` 35 · `world_object_data` 57 · `world_body` 20 · `projection` 29 · `entity` 47 · `smoke` 50 · `world` 16
+windowed: `depth_sort` 5 (**ห้ามใส่ `--headless`** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
 |---|---|---|
@@ -81,7 +81,7 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 | ~~**W5**~~ ✅ | ย้าย `Npc` / `Bed` / `SignPost` มาใช้ `world_body` | **เสร็จ: `world_test` 32→60 · DoD ข้อ 1 ปิด · reach band กว้างขึ้นวัดได้** |
 | ~~**W6**~~ ✅ | `FarmGrid` เรียก `WorldSpace` · movement/targeting เข้า projected space · แยก `FarmDebugView` ออกจาก model | **เสร็จ: `projection_test` 21/21 · D13 ปิด · `TILE_SIZE` ถูกลบทั้งโปรเจกต์** |
 | ~~**W7**~~ ✅ | depth sorting ด้วย world y | **เสร็จ: `depth_sort_test` อ่านพิกเซลจริง 5/5 · `FarmDebugView` วาดสองรอบเรียงด้วย `depth_key` · invariant ของ entity ล็อกด้วยเทสต์** |
-| **W8** | ซอย `smoke_test.gd` (125 บรรทัด → หลายไฟล์) ตามกฎ ≤40 บรรทัด/ฟังก์ชัน | เทสต์ทั้งหมดยังผ่าน จำนวน assertion ไม่ลด |
+| ~~**W8**~~ ✅ | ซอย `smoke_test.gd` · `change_scene` · `world_test.gd` | **เสร็จ: assertion ไม่ลดสักข้อ · เพดานผ่านทั้งโปรเจกต์** |
 
 ## TASK ORDER
 
@@ -134,8 +134,8 @@ W4 ทำ Player ก่อน entity อื่นเพราะมันคื�
 
 | # | งาน | กฎที่ผิด | เสนอทำที่ |
 |---|---|---|---|
-| D1 | `smoke_test.gd::_ready` ยาว 125 บรรทัด | ฟังก์ชัน ≤ 40 | = Task W8 |
-| D2 | `scene_loader.gd::change_scene` 49 บรรทัด | ฟังก์ชัน ≤ 40 | เฟส 1 |
+| D1 | ~~`smoke_test.gd::_ready` ยาว 125 บรรทัด~~ | ฟังก์ชัน ≤ 40 | ✅ W8 — ซอยเป็น 10 ส่วนตามลำดับการเล่น |
+| D2 | ~~`scene_loader.gd::change_scene` 49 บรรทัด~~ | ฟังก์ชัน ≤ 40 | ✅ W8 — แยก `_begin_change` / `_swap_to` / `_abort_change` + เทสต์ guard |
 | D3 | collision magic number 8 จุด | no magic numbers | = Task W3–W5 |
 | D4 | ธง `talked_<npc>_day_<n>` สะสมไม่มีขอบเขต ทำไฟล์เซฟบวม | หนี้ #6 เดิม | เฟส 1 (ก่อนเพิ่ม NPC) |
 | D5 | ไม่มี `AGENTS.md` / `IMPLEMENTATION_PLAN.md` | — | ✅ เสร็จแล้ว |

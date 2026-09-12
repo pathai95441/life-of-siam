@@ -46,42 +46,22 @@ func is_changing() -> bool:
 ## Fades out, swaps to [param path], fades back in. [param spawn_point] is
 ## written to [GameState] so the incoming level knows where to place the player.
 func change_scene(path: String, spawn_point: StringName = &"default") -> void:
-	if _is_changing:
-		push_warning("SceneLoader: change to %s ignored, already changing to %s"
-			% [path, _target_path])
+	if not _begin_change(path, spawn_point):
 		return
-	if not ResourceLoader.exists(path):
-		push_error("SceneLoader: no such scene '%s'" % path)
-		return
-
-	_is_changing = true
-	_target_path = path
-	GameState.spawn_point = spawn_point
-	EventBus.scene_change_started.emit(path)
-
-	# A conversation must not survive the scene it belongs to.
-	DialogueSystem.cancel()
-	GameClock.set_running(false)
 
 	await _fade_to(1.0)
 
 	var scene := await _load_threaded(path)
 	if scene == null:
 		push_error("SceneLoader: failed to load '%s'" % path)
-		await _fade_to(0.0)
-		_is_changing = false
+		await _abort_change()
 		return
 
-	# Unpause before swapping: a paused tree would freeze the new scene.
-	get_tree().paused = false
-	var err := get_tree().change_scene_to_packed(scene)
-	if err != OK:
-		push_error("SceneLoader: change_scene_to_packed failed (%s)" % error_string(err))
-		await _fade_to(0.0)
-		_is_changing = false
+	if not _swap_to(scene):
+		await _abort_change()
 		return
 
-	# Let the new scene run one full frame so its _ready chain completes before
+	# Let the new scene run two full frames so its _ready chain completes before
 	# the curtain lifts and before world_ready listeners see it.
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -92,6 +72,45 @@ func change_scene(path: String, spawn_point: StringName = &"default") -> void:
 	await _fade_to(0.0)
 	_is_changing = false
 	EventBus.scene_change_finished.emit(path)
+
+
+## Validates the request and puts the world into a state safe to tear down.
+## Returns false when the change must not proceed.
+func _begin_change(path: String, spawn_point: StringName) -> bool:
+	if _is_changing:
+		push_warning("SceneLoader: change to %s ignored, already changing to %s"
+			% [path, _target_path])
+		return false
+	if not ResourceLoader.exists(path):
+		push_error("SceneLoader: no such scene '%s'" % path)
+		return false
+
+	_is_changing = true
+	_target_path = path
+	GameState.spawn_point = spawn_point
+	EventBus.scene_change_started.emit(path)
+
+	# A conversation must not survive the scene it belongs to.
+	DialogueSystem.cancel()
+	GameClock.set_running(false)
+	return true
+
+
+func _swap_to(scene: PackedScene) -> bool:
+	# Unpause before swapping: a paused tree would freeze the new scene.
+	get_tree().paused = false
+	var err := get_tree().change_scene_to_packed(scene)
+	if err == OK:
+		return true
+	push_error("SceneLoader: change_scene_to_packed failed (%s)" % error_string(err))
+	return false
+
+
+## Lifts the curtain on whatever is still on screen and releases the lock, so a
+## failed change leaves the player looking at the old scene rather than black.
+func _abort_change() -> void:
+	await _fade_to(0.0)
+	_is_changing = false
 
 
 func to_main_menu() -> void:

@@ -18,21 +18,61 @@ func check(label: String, condition: bool) -> void:
 func check_eq(label: String, got: Variant, want: Variant) -> void:
 	check("%s (got %s, want %s)" % [label, got, want], got == want)
 
+# Shared across sections on purpose: this is one run through the core loop, not
+# a set of independent cases. The crop planted in _test_farming is the one
+# _test_growth matures and _test_harvest picks, so order is load-bearing and
+# the sections read top to bottom as a single playthrough.
+const CELL := Vector2i(0, 0)
+const DRY_CELL := Vector2i(2, 2)
+
+var _grid: FarmGrid
+var _turnip: CropData
+
+
 func _ready() -> void:
-	var grid: FarmGrid = FarmGrid.new()
-	add_child(grid)
+	await _setup()
+
+	_test_clock()
+	_test_inventory()
+	_test_farming()
+	_test_growth()
+	_test_drought()
+	_test_harvest()
+	_test_save_round_trip()
+	_test_season_gating()
+	_test_dialogue()
+	_test_economy()
+
+	_report()
+
+
+func _setup() -> void:
+	_grid = FarmGrid.new()
+	add_child(_grid)
 	await get_tree().process_frame
 
 	GameClock.reset()
 	GameState.reset()
 	Inventory.reset()
+	_turnip = Database.get_crop(&"turnip")
 
+
+func _report() -> void:
+	print("\n==================================================")
+	print("  %d passed, %d failed" % [pass_count, fail_count])
+	print("==================================================")
+	get_tree().quit(1 if fail_count > 0 else 0)
+
+
+func _test_clock() -> void:
 	print("\n--- clock ---")
 	check_eq("starts day 1", GameClock.day, 1)
 	check_eq("starts spring", GameClock.season, GameConstants.Season.SPRING)
 	check_eq("wakes at 06:00", GameClock.hour(), 6)
 	check_eq("absolute_day", GameClock.absolute_day(), 1)
 
+
+func _test_inventory() -> void:
 	print("\n--- inventory ---")
 	check_eq("hoe added", Inventory.add_item(&"hoe", 1), 0)
 	check_eq("has hoe", Inventory.has_item(&"hoe"), true)
@@ -45,78 +85,101 @@ func _ready() -> void:
 	check_eq("remove more than held fails", Inventory.remove_item(&"turnip_seed", 99), false)
 	check_eq("still 5 seeds", Inventory.count_of(&"turnip_seed"), 5)
 
-	print("\n--- farming ---")
-	var cell := Vector2i(0, 0)
-	check_eq("till fresh soil", grid.till(cell), true)
-	check_eq("till twice fails", grid.till(cell), false)
-	check_eq("till outside field fails", grid.till(Vector2i(999, 999)), false)
-	var turnip := Database.get_crop(&"turnip")
-	check("turnip crop loaded", turnip != null)
-	check_eq("plant on tilled soil", grid.plant(cell, turnip), true)
-	check_eq("plant twice fails", grid.plant(cell, turnip), false)
-	check_eq("water tilled soil", grid.water(cell), true)
-	check_eq("water twice fails", grid.water(cell), false)
 
-	var soil := grid.get_cell(cell)
+func _test_farming() -> void:
+	print("\n--- farming ---")
+	check_eq("till fresh soil", _grid.till(CELL), true)
+	check_eq("till twice fails", _grid.till(CELL), false)
+	check_eq("till outside field fails", _grid.till(Vector2i(999, 999)), false)
+	check("turnip crop loaded", _turnip != null)
+	check_eq("plant on tilled soil", _grid.plant(CELL, _turnip), true)
+	check_eq("plant twice fails", _grid.plant(CELL, _turnip), false)
+	check_eq("water tilled soil", _grid.water(CELL), true)
+	check_eq("water twice fails", _grid.water(CELL), false)
+
+	var soil := _grid.get_cell(CELL)
 	check_eq("growth starts at 0", soil.growth_days, 0)
 	check_eq("not harvestable yet", soil.is_harvestable(), false)
 
+
+func _test_growth() -> void:
 	print("\n--- growth over days (watered) ---")
-	var total := turnip.total_growth_days()
-	for i in total:
+	var total := _turnip.total_growth_days()
+	for _i in total:
 		GameClock.sleep_until_morning()
-		grid.water(cell)
+		_grid.water(CELL)
+	var soil := _grid.get_cell(CELL)
 	check_eq("grew to maturity in %d days" % total, soil.growth_days, total)
 	check_eq("is harvestable", soil.is_harvestable(), true)
 	check_eq("day advanced", GameClock.day, 1 + total)
 
-	print("\n--- drought ---")
-	var dry_cell := Vector2i(2, 2)
-	grid.till(dry_cell)
-	grid.plant(dry_cell, turnip)
-	for i in turnip.drought_tolerance + 1:
-		GameClock.sleep_until_morning()
-	check_eq("unwatered crop withers", grid.get_cell(dry_cell).withered, true)
 
+func _test_drought() -> void:
+	print("\n--- drought ---")
+	_grid.till(DRY_CELL)
+	_grid.plant(DRY_CELL, _turnip)
+	for _i in _turnip.drought_tolerance + 1:
+		GameClock.sleep_until_morning()
+	check_eq("unwatered crop withers", _grid.get_cell(DRY_CELL).withered, true)
+
+
+func _test_harvest() -> void:
 	print("\n--- harvest ---")
 	var before := Inventory.count_of(&"turnip")
-	check_eq("harvest succeeds", grid.harvest(cell), true)
+	check_eq("harvest succeeds", _grid.harvest(CELL), true)
 	check("produce entered bag", Inventory.count_of(&"turnip") > before)
-	check_eq("harvest twice fails", grid.harvest(cell), false)
+	check_eq("harvest twice fails", _grid.harvest(CELL), false)
 
+
+## Serialises through JSON exactly as SaveManager does, to prove the payload
+## survives a real file round trip and not just an in-memory copy.
+func _test_save_round_trip() -> void:
 	print("\n--- save round trip ---")
-	var farm_snapshot := grid.save_state()
-	var inv_snapshot := Inventory.save_state()
-	var clock_snapshot := GameClock.save_state()
+	var snapshot := {
+		"farm": _grid.save_state(),
+		"inv": Inventory.save_state(),
+		"clock": GameClock.save_state(),
+	}
 	var turnips := Inventory.count_of(&"turnip")
 	var saved_day := GameClock.day
 
-	# Serialize through JSON exactly as SaveManager does, to prove the payload
-	# survives a real file round trip and not just an in-memory copy.
-	var json := JSON.stringify({"farm": farm_snapshot, "inv": inv_snapshot, "clock": clock_snapshot})
-	var restored: Dictionary = JSON.parse_string(json)
+	var restored: Dictionary = JSON.parse_string(JSON.stringify(snapshot))
 	check("payload survives JSON", restored != null)
 
-	# Corrupt live state, then restore.
-	Inventory.reset()
-	GameClock.reset()
-	grid.load_state({})
-	check_eq("state cleared", Inventory.count_of(&"turnip"), 0)
+	_corrupt_live_state()
+	_restore(restored)
 
-	grid.load_state(restored["farm"])
-	Inventory.load_state(restored["inv"])
-	GameClock.load_state(restored["clock"])
 	check_eq("inventory restored", Inventory.count_of(&"turnip"), turnips)
 	check_eq("clock restored", GameClock.day, saved_day)
-	check_eq("tilled cell restored", grid.get_cell(cell) != null and grid.get_cell(cell).tilled, true)
-	check_eq("withered cell restored", grid.get_cell(dry_cell).withered, true)
+	check_eq("tilled cell restored",
+		_grid.get_cell(CELL) != null and _grid.get_cell(CELL).tilled, true)
+	check_eq("withered cell restored", _grid.get_cell(DRY_CELL).withered, true)
 
+
+## Wipes everything the save is meant to bring back, so a passing restore
+## cannot be the original state surviving by accident.
+func _corrupt_live_state() -> void:
+	Inventory.reset()
+	GameClock.reset()
+	_grid.load_state({})
+	check_eq("state cleared", Inventory.count_of(&"turnip"), 0)
+
+
+func _restore(payload: Dictionary) -> void:
+	_grid.load_state(payload["farm"])
+	Inventory.load_state(payload["inv"])
+	GameClock.load_state(payload["clock"])
+
+
+func _test_season_gating() -> void:
 	print("\n--- season gating ---")
 	var chili := Database.get_crop(&"chili")
 	check_eq("chili not in spring", chili.grows_in_season(GameConstants.Season.SPRING), false)
 	check_eq("chili in summer", chili.grows_in_season(GameConstants.Season.SUMMER), true)
-	check_eq("turnip in spring", turnip.grows_in_season(GameConstants.Season.SPRING), true)
+	check_eq("turnip in spring", _turnip.grows_in_season(GameConstants.Season.SPRING), true)
 
+
+func _test_dialogue() -> void:
 	print("\n--- dialogue ---")
 	var dlg := Database.get_dialogue(&"somchai_default")
 	check("dialogue loaded", dlg != null)
@@ -130,6 +193,8 @@ func _ready() -> void:
 	check_eq("finishes after last line", DialogueSystem.is_active(), false)
 	check_eq("sets_flag applied", GameState.has_flag(&"met_somchai"), true)
 
+
+func _test_economy() -> void:
 	print("\n--- economy ---")
 	GameState.reset()
 	check_eq("starting money", GameState.money, GameConstants.STARTING_MONEY)
@@ -137,8 +202,3 @@ func _ready() -> void:
 	check_eq("money untouched", GameState.money, GameConstants.STARTING_MONEY)
 	check_eq("can spend 100", GameState.try_spend(100), true)
 	check_eq("money after spend", GameState.money, GameConstants.STARTING_MONEY - 100)
-
-	print("\n==================================================")
-	print("  %d passed, %d failed" % [pass_count, fail_count])
-	print("==================================================")
-	get_tree().quit(1 if fail_count > 0 else 0)
