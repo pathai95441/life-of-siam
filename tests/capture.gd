@@ -28,6 +28,9 @@ func _ready() -> void:
 	await _shot("03_dialogue")
 
 	DialogueSystem.cancel()
+	await _settle(4)
+	await _shot_shop()
+
 	get_tree().call_group(&"player", "queue_free")
 	await _settle(4)
 
@@ -63,6 +66,17 @@ func _seed_farm() -> void:
 				var soil := grid.get_cell(cell)
 				soil.growth_days = absi(x + y * 2) % (turnip.total_growth_days() + 1)
 	grid.queue_redraw()
+
+
+## The shop UI has never been looked at; open it so it can be.
+func _shot_shop() -> void:
+	for node in get_tree().get_nodes_in_group(&"interactable"):
+		if node is Shop:
+			(node as Shop).interact(get_tree().get_first_node_in_group(&"player"))
+			await _settle(6)
+			await _shot("04_shop")
+			return
+	push_warning("[capture] no Shop in the world to photograph")
 
 
 func _settle(frames: int) -> void:

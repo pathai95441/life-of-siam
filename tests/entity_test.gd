@@ -103,7 +103,10 @@ func _check_player_sprite_scale(player: Player, body: WorldBody) -> void:
 ## npc.tscn shipped a dead sprite_node for two tasks.
 func _test_entities_are_data_driven() -> void:
 	print("\n--- entities are data driven (W5) ---")
-	var expected := {&"Somchai": &"npc_adult", &"Bed": &"bed", &"SignPost": &"sign_post"}
+	var expected := {
+		&"Somchai": &"npc_adult", &"Bed": &"bed", &"SignPost": &"sign_post",
+		&"ShippingBin": &"shipping_bin", &"Shop": &"shop_stall",
+	}
 	for target in get_tree().get_nodes_in_group(&"interactable"):
 		var interactable := target as Interactable
 		if interactable != null:

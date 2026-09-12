@@ -11,7 +11,7 @@
 | **V** | **HUD & camera readability (D6–D8)** | 🟢 เสร็จ |
 | **W** | **World-object model (2.5D foundation)** | 🟢 **เสร็จครบ W1–W8 · DoD ผ่าน 7/7** |
 | 1 | Theme + ฟอนต์ไทย + เทสต์ | ⬜ รอ |
-| 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🔵 กำลังทำ — E1 ✅ E2 ✅ E3 ✅ |
+| 2 | ปิดลูปเศรษฐกิจ (shipping bin, shop) | 🔵 กำลังทำ — E1 ✅ E2 ✅ E3 ✅ E5 ✅ เหลือ E4 |
 | 3 | ขยายโลก (แผนที่ที่ 2, NPC schedule) | ⬜ รอ |
 | 4 | ทำให้ดูเป็นเกม (TileSet, animation, เสียง) | ⬜ รอ |
 | 5 | ปล่อยได้ (save slot UI, localisation, CI) | ⬜ รอ |
@@ -68,8 +68,8 @@ bounds จาก data แทน shape ที่จิ้มไว้ · `world.t
 
 ## TASK BREAKDOWN
 
-ชุดเทสต์ปัจจุบัน **352 assertion ผ่านทั้งหมด**
-headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 29 · `entity` 47 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `smoke` 50 · `world` 16
+ชุดเทสต์ปัจจุบัน **394 assertion ผ่านทั้งหมด**
+headless: `world_space` 35 · `world_object_data` 73 · `world_body` 20 · `projection` 31 · `entity` 69 · `economy` 26 · `shop` 32 · `shop_ui` 19 · `economy_loop` 18 · `smoke` 50 · `world` 16
 windowed: `depth_sort` 5 (**ห้ามใส่ `--headless`** — headless เรนเดอร์ไม่ได้จึงตรวจลำดับการวาดจริงไม่ได้)
 
 | Task | ทำอะไร | ผลที่ทดสอบได้ |
@@ -191,11 +191,11 @@ ui/        shop_panel.gd       ← ใหม่: view เปล่า ๆ ฟั
 | ~~**E2**~~ ✅ | `ShopData` + `Shop` — ตรรกะซื้อล้วน ไม่มี UI | **เสร็จ: `tests/shop_test.tscn` 32/32 · ทุก refusal path ยืนยันว่าไม่มีอะไรเปลี่ยนเลย** |
 | ~~**E3**~~ ✅ | `ShopPanel` — UI รายการของ ราคา ปุ่มซื้อ | **เสร็จ: `tests/shop_ui_test.tscn` 19/19 · panel ไม่ตัดสินอะไรเอง ถาม `Shop` อย่างเดียว** |
 | **E4** | สรุปรายได้ตอนเช้า + toast | `day_started` แล้วขึ้นยอดขายเมื่อวาน |
-| **E5** | วาง `ShippingBin` + `Shop` ลง `world.tscn` + เทสต์ integration | เดินไปกด `E` ได้จริงทั้งสอง · reach band ครอบ probe |
+| ~~**E5**~~ ✅ | วาง `ShippingBin` + `Shop` + `ShopPanel` ลง `world.tscn` | **เสร็จ: `economy_loop_test` 18/18 ครบวงผ่านโหนดจริง · reach band 4–60 px ทั้งสอง** |
 
 ## TASK ORDER
 
-`E1 → E2 → E3 → E4 → E5`
+`E1 → E2 → E3 → E5 → E4`  (สลับ E4/E5 ตามที่ตกลง: E5 ทำให้ตรวจด้วยตาได้ก่อน)
 
 E1 ก่อนเพราะเป็นครึ่งที่ทำให้เกม**มีจุดหมาย**ทันที (ปลูก→ขาย→มีเงิน) และไม่ต้องมี UI ใหม่เลย
 E2 แยกจาก E3 เพื่อให้ตรรกะเงินถูกทดสอบครบก่อนมี UI มาบัง
@@ -237,6 +237,12 @@ E5 ท้ายสุดเพราะแตะฉากที่ใช้ง�
 | 🟠 | จ่ายซ้ำถ้า `day_started` ยิงสองครั้ง | ล้างถังในธุรกรรมเดียวกับการจ่าย + เทสต์นอนสองคืน |
 | 🟡 | ราคายังไม่ balance | ราคาอยู่ใน `.tres` แก้ได้โดยไม่แตะโค้ด · balance เป็นงานหลังเกมเล่นได้ |
 | 🟡 | ฝาก "ทั้ง stack" อาจใช้งานไม่ถนัด | เป็นการตัดสินใจ ❓1 · ถ้าไม่ถนัดเพิ่ม UI เลือกของทีหลัง ไม่กระทบตรรกะ |
+
+### DISCOVERED ระหว่างเฟส 2
+
+| # | งาน | เสนอทำที่ |
+|---|---|---|
+| D16 | พื้นหลัง `ShopPanel` โปร่งใสจนเห็นไร่ทะลุ (default theme ไม่มี StyleBox) | เฟส 4 งาน UI polish |
 
 ## DISCOVERED TASKS
 

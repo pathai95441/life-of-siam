@@ -12,6 +12,9 @@
 [ext_resource type="PackedScene" path="res://src/ui/dialogue/dialogue_box.tscn" id="9_dialogue"]
 [ext_resource type="PackedScene" path="res://src/ui/inventory/inventory_panel.tscn" id="10_inventory"]
 [ext_resource type="PackedScene" path="res://src/ui/menus/pause_menu.tscn" id="11_pause"]
+[ext_resource type="PackedScene" path="res://src/systems/economy/shipping_bin.tscn" id="13_bin"]
+[ext_resource type="PackedScene" path="res://src/systems/economy/shop.tscn" id="14_shop"]
+[ext_resource type="PackedScene" path="res://src/ui/shop/shop_panel.tscn" id="15_shopui"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h"]
 size = Vector2(960, 16)
@@ -77,6 +80,12 @@ position = Vector2(-220, -170)
 [node name="SignPost" parent="Entities" instance=ExtResource("7_sign")]
 position = Vector2(-30, 150)
 
+[node name="ShippingBin" parent="Entities" instance=ExtResource("13_bin")]
+position = Vector2(140, 190)
+
+[node name="Shop" parent="Entities" instance=ExtResource("14_shop")]
+position = Vector2(-200, 210)
+
 [node name="SpawnPoints" type="Node" parent="."]
 
 [node name="Default" type="Marker2D" parent="SpawnPoints"]
@@ -92,5 +101,7 @@ position = Vector2(-200, -140)
 [node name="DialogueBox" parent="Ui" instance=ExtResource("9_dialogue")]
 
 [node name="InventoryPanel" parent="Ui" instance=ExtResource("10_inventory")]
+
+[node name="ShopPanel" parent="Ui" instance=ExtResource("15_shopui")]
 
 [node name="PauseMenu" parent="Ui" instance=ExtResource("11_pause")]
